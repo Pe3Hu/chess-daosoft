@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://bj5dpq71t7j4v"]
+
+[ext_resource type="Script" uid="uid://d3iundk5xnug4" path="res://entities/chess_board/chess_board.gd" id="1_pump7"]
+[ext_resource type="PackedScene" uid="uid://cir12cpm1kaw2" path="res://entities/chess_board/chess_tile/chess_tile.tscn" id="2_7ciga"]
+[ext_resource type="PackedScene" uid="uid://sfu5ej4glwwj" path="res://entities/chess_piece/chess_piece.tscn" id="2_nujx6"]
+
+[node name="Chessboard" type="TileMapLayer"]
+script = ExtResource("1_pump7")
+chess_tile_scene = ExtResource("2_7ciga")
+chess_piece_scene = ExtResource("2_nujx6")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="ChessTiles" type="Node2D" parent="."]
+
+[node name="ChessPieces" type="Node2D" parent="."]
