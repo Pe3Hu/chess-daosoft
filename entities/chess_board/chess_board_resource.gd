@@ -2,9 +2,9 @@ class_name ChessBoardResource
 extends Resource
 
 
+var chess_notation: ChessNotationResource = ChessNotationResource.new()
 var chess_tiles: Array[ChessTileResource]
-var coord_to_chess_piece: Dictionary
-
+var legal_chess_tiles: Array[ChessTileResource]
 var focus_chess_tile: ChessTileResource:
 	set(value_):
 		reset_chess_tile_states()
@@ -12,14 +12,18 @@ var focus_chess_tile: ChessTileResource:
 		
 		if focus_chess_tile != null:
 			update_chess_tile_states()
-var legal_chess_tiles: Array[ChessTileResource]
+
+var chess_pieces: Array[ChessPieceResource]
+var captured_templates: Dictionary
+
+
+var buttom_color: FrameworkSettings.PieceColor = FrameworkSettings.PieceColor.BLACK
 
 
 func _init() -> void:
 	init_chess_tiles()
-	#add_piece(0, FrameworkSettings.PieceColor.WHITE | FrameworkSettings.PieceType.BISHOP)
-	#add_piece(63, FrameworkSettings.PieceColor.BLACK | FrameworkSettings.PieceType.KING)
-	
+	#add_piece(FrameworkSettings.PieceColor.BLACK | FrameworkSettings.PieceType.BISHOP, 25)
+	#focus_chess_tile = chess_tiles[25]
 	load_position_from_fen(FrameworkSettings.START_FEN)
 	
 func init_chess_tiles() -> void:
@@ -61,21 +65,24 @@ func load_position_from_fen(fen_: String) -> void:
 					piece_color = FrameworkSettings.PieceColor.WHITE#"white"
 				
 				var piece_type =  FrameworkSettings.symbol_to_type[symbol.to_lower()]
-				var coord_index = rank * FrameworkSettings.BOARD_SIZE.x + file
-				var piece_index = piece_type | piece_color
-				add_piece(coord_index, piece_index)
+				var chess_tile_index = rank * FrameworkSettings.BOARD_SIZE.x + file
+				var template_id = piece_type | piece_color
+				add_piece(template_id, chess_tile_index)
 				file += 1
 	
-func add_piece(coord_id_: int, piece_id_: int) -> void:
-	coord_to_chess_piece[coord_id_] = ChessPieceResource.new(self, piece_id_, coord_id_)
+func add_piece(template_id_: int, chess_tile_index_: int,) -> void:
+	var template = load("res://entities/chess_piece/templates/" + str(template_id_) + ".tres")
+	var chess_tile = chess_tiles[chess_tile_index_]
+	var chess_piece = ChessPieceResource.new(self, template, chess_tile)
+	chess_pieces.append(chess_piece)
 	
 func update_chess_tile_states() -> void:
 	focus_chess_tile.current_state = FrameworkSettings.TileState.CURRENT
+	focus_chess_tile.chess_piece.geterate_legal_moves()
 	
-	for windrose_offset in focus_chess_tile.windrose_to_sequence:
-		for sequence_chess_tile in focus_chess_tile.windrose_to_sequence[windrose_offset]:
-			sequence_chess_tile.current_state = FrameworkSettings.TileState.NEXT
-			legal_chess_tiles.append(sequence_chess_tile)
+	for chess_move in focus_chess_tile.chess_piece.chess_moves:
+		chess_move.end_chess_tile.current_state = FrameworkSettings.TileState.NEXT
+		legal_chess_tiles.append(chess_move.end_chess_tile)
 	
 func reset_chess_tile_states() -> void:
 	if focus_chess_tile == null: return
@@ -85,3 +92,11 @@ func reset_chess_tile_states() -> void:
 		legal_chess_tile.current_state = FrameworkSettings.TileState.NEXT
 	
 	legal_chess_tiles.clear()
+	
+func capture_chess_piece(chess_piece_: ChessPieceResource) -> void:
+	if !captured_templates.has(chess_piece_.template):
+		captured_templates[chess_piece_] = 0
+	
+	captured_templates[chess_piece_] += 1
+	chess_piece_.chess_tile.chess_piece = null
+	chess_pieces.erase(chess_piece_)

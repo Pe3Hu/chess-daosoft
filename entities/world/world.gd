@@ -1,7 +1,6 @@
 class_name World 
 extends Node
 
-	
 
 
 func _input(event) -> void:

@@ -33,32 +33,6 @@ func find_all_sequences() -> void:
 				var next_chess_tile = chess_board.get_tile_based_on_coord(neighbour_coord)
 				windrose_to_sequence[windrose_offset].append(next_chess_tile)
 	
-##remove temp/old 
-func find_all_sequences_based_on_id() -> void:
-	var is_origin_on_edge = FrameworkSettings.check_is_chess_tile_id_is_on_borad_edge(id)
-	
-	for windrose_offset in FrameworkSettings.WINDROSE_OFFSETS:
-		windrose_to_sequence[windrose_offset] = []
-		var neighbour_id = id
-		var is_sequence_end = false
-		
-		while !is_sequence_end:
-			neighbour_id += windrose_offset
-			is_sequence_end = !FrameworkSettings.check_is_chess_tile_id_is_valid(neighbour_id)
-		
-			if !is_sequence_end:
-				var next_chess_tile = chess_board.chess_tiles[neighbour_id]
-				is_sequence_end = FrameworkSettings.check_is_chess_tile_id_is_on_borad_edge(neighbour_id)
-				
-				if is_origin_on_edge:
-					var windrose_offset_index = FrameworkSettings.WINDROSE_OFFSETS.find(windrose_offset)
-					
-					if windrose_offset_index % 2 == 0 and check_chess_tile_on_same_axis(next_chess_tile):
-						is_sequence_end = false
-				
-				if !is_sequence_end:
-					windrose_to_sequence[windrose_offset].append(next_chess_tile)
-	
 func check_chess_tile_on_same_axis(chess_tile_: ChessTileResource) -> bool:
 	return coord.x == chess_tile_.coord.x or coord.y == chess_tile_.coord.y
 	

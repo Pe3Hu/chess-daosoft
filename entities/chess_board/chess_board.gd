@@ -2,6 +2,7 @@ class_name ChessBoard
 extends TileMapLayer
 
 
+@export var notation: ChessNotation
 @export var chess_tile_scene: PackedScene
 @export var chess_piece_scene: PackedScene
 @export var resource: ChessBoardResource = ChessBoardResource.new()
@@ -13,22 +14,15 @@ var resource_to_chess_piece: Dictionary
 
 
 func _ready() -> void:
-	position = -Vector2(FrameworkSettings.BOARD_SIZE) * FrameworkSettings.TILE_SIZE / 2
+	position = FrameworkSettings.TILE_SIZE * 0.5 + FrameworkSettings.AXIS_OFFSET
 	init_chess_tiles()
 	init_pieces()
 	
 func init_chess_tiles() -> void:
-	chess_tiles.position = FrameworkSettings.TILE_SIZE * 0.5
-	
-	#for file in FrameworkSettings.BOARD_SIZE.y:
-		#for rank in FrameworkSettings.BOARD_SIZE.x:
-			#var coord = Vector2i(rank, file)
-			#add_chess_tile(coord)
 	
 	for chess_tile_resource in resource.chess_tiles:
 		add_chess_tile(chess_tile_resource)
 	
-#func add_chess_tile(coord_: Vector2i) -> void:
 func add_chess_tile(chess_tile_resource_: ChessTileResource) -> void:
 	var chess_tile = chess_tile_scene.instantiate()
 	chess_tile.chess_board = self
@@ -39,11 +33,9 @@ func get_chess_tile(chess_tile_resource_: ChessTileResource) -> ChessTile:
 	return chess_tiles.get_child(chess_tile_resource_.id)
 	
 func init_pieces() -> void:
-	chess_pieces.position = FrameworkSettings.TILE_SIZE * 0.5
 	
-	for coord in resource.coord_to_chess_piece:
-		var chess_piecepiece_resource = resource.coord_to_chess_piece[coord]
-		add_piece(chess_piecepiece_resource)
+	for chess_piece_resource in resource.chess_pieces:
+		add_piece(chess_piece_resource)
 	
 func add_piece(chess_piece_resource_: ChessPieceResource) -> void:
 	var chess_piece = chess_piece_scene.instantiate()

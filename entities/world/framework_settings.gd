@@ -4,8 +4,13 @@ extends Node
 
 const BOARD_SIZE: Vector2i = Vector2i(8, 8)
 const TILE_SIZE: Vector2 = Vector2(32, 32)
+const AXIS_OFFSET: Vector2 = Vector2(16, 16)
 
-const START_FEN: String = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"# w KQkq - 0 1"
+#"rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR"
+const START_FEN: String = "rnbkqbnr/pppppppp/8/8/8/9/PPPPPPP/RNBKQBNR"# w KQkq - 0 1"
+
+const AXIS_X: Array[String] = ["a","b","c","d","e","f","g","h"]
+const AXIS_Y: Array[String] = ["1","2","3","4","5","6","7","8"]
 
 const WINDROSE_OFFSETS = [
 	WindroseOffset.N,
@@ -27,6 +32,17 @@ const WINDROSE_DIRECTIONS = [
 	Vector2i(-1, 1),
 	Vector2i(-1, 0),
 	Vector2i(-1,-1)
+]
+
+const KNIGHT_MOVES = [
+	Vector2i(-1,-2),
+	Vector2i( 1,-2),
+	Vector2i( 2,-1),
+	Vector2i( 2, 1),
+	Vector2i( 1, 2),
+	Vector2i(-1, 2),
+	Vector2i(-2, 1),
+	Vector2i(-2,-1)
 ]
 
 enum WindroseOffset {
@@ -61,39 +77,47 @@ enum PieceColor {
 	BLACK = 16      # 10000
 }
 
+enum MoveType {
+	FREE = 0,
+	CAPTURE = 1,
+	PASSANT = 2,
+	CHECK = 3,
+	CHECKMATE = 4,
+	DRAW = 5
+}
+
 var squre_to_direction
 var symbol_to_type: Dictionary
+var move_to_symbol: Dictionary
 
 
 func _init() -> void:
 	init_symbol_to_type()
+	init_move_to_symbol()
 	
 func init_symbol_to_type() -> void:
-	symbol_to_type["k"] = FrameworkSettings.PieceType.KING#"king"
-	symbol_to_type["p"] = FrameworkSettings.PieceType.PAWN#""pawn"
-	symbol_to_type["n"] = FrameworkSettings.PieceType.KNIGHT#""knight"
-	symbol_to_type["b"] = FrameworkSettings.PieceType.BISHOP#""bishop"
-	symbol_to_type["r"] = FrameworkSettings.PieceType.ROOK#""rook"
-	symbol_to_type["q"] = FrameworkSettings.PieceType.QUEEN#""queen"
+	symbol_to_type["k"] = PieceType.KING#"king"
+	symbol_to_type["p"] = PieceType.PAWN#""pawn"
+	symbol_to_type["n"] = PieceType.KNIGHT#""knight"
+	symbol_to_type["b"] = PieceType.BISHOP#""bishop"
+	symbol_to_type["r"] = PieceType.ROOK#""rook"
+	symbol_to_type["q"] = PieceType.QUEEN#""queen"
+	
+func init_move_to_symbol() -> void:
+	move_to_symbol[MoveType.FREE] = "-" 
+	move_to_symbol[MoveType.CAPTURE] = "x" 
+	move_to_symbol[MoveType.PASSANT] = "e.p." 
+	move_to_symbol[MoveType.CHECK] = "+" 
+	move_to_symbol[MoveType.CHECKMATE] = "#" 
+	move_to_symbol[MoveType.DRAW] = "=" 
 	
 func check_is_chess_tile_id_is_valid(chess_tile_id_: int) -> bool:
 	return chess_tile_id_ >= 0 and chess_tile_id_ < BOARD_SIZE.x * BOARD_SIZE.y
 	
 func check_is_chess_tile_id_is_on_borad_edge(chess_tile_id_: int) -> bool:
 	var x = chess_tile_id_ % BOARD_SIZE.x
-	var y = chess_tile_id_ / BOARD_SIZE.x
+	var y = chess_tile_id_ * (1.0 / BOARD_SIZE.x)
 	return x == 0 or y == 0 or x == BOARD_SIZE.x - 1 or y == BOARD_SIZE.y - 1
 	
 func check_is_chess_tile_coord_is_valid(chess_tile_coord_: Vector2i) -> bool:
 	return chess_tile_coord_.x >= 0 and chess_tile_coord_.y >= 0 and chess_tile_coord_.x < BOARD_SIZE.x and chess_tile_coord_.y < BOARD_SIZE.y
-	
-#func check_chess_tile_on_same_axis(chess_tiles_: Array) -> bool:
-	##var x = chess_tiles_.front() % BOARD_SIZE.x
-	##var y = chess_tiles_.front() / BOARD_SIZE.x
-	##var a_coord = Vector2i(x, y)
-	##x = chess_tiles_.back() % BOARD_SIZE.x
-	##y = chess_tiles_.back() / BOARD_SIZE.x
-	##var b_coord = Vector2i(x, y)
-	#var a_tile = chess_tiles_.front()
-	#var b_tile = chess_tiles_.back()
-	#return a_tile.coord.x == b_tile.coord.x or a_tile.coord.y == b_tile.coord.y

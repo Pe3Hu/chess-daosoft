@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://crjit13a74tgg"]
+
+[ext_resource type="Script" uid="uid://wheuls2exi4p" path="res://entities/chess_notation/chess_notation.gd" id="1_6vppt"]
+[ext_resource type="PackedScene" uid="uid://bg8sh74o4pmry" path="res://entities/chess_notation/chess_move/chess_move.tscn" id="2_5hmad"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6vppt"]
+bg_color = Color(0.7413847, 0.7413847, 0.7413844, 1)
+
+[node name="ChessNotation" type="PanelContainer"]
+custom_minimum_size = Vector2(100, 0)
+theme_override_styles/panel = SubResource("StyleBoxFlat_6vppt")
+script = ExtResource("1_6vppt")
+move_scene = ExtResource("2_5hmad")
+
+[node name="Moves" type="VBoxContainer" parent="."]
+layout_mode = 2

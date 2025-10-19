@@ -1,6 +1,10 @@
+Label
+HBoxContainer
+VBoxContainer
+Node
+PanelContainer
 CollisionShape2D
 Area2D
-Label
 Camera2D
 Node2D
 Sprite2D
