@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://bj5dpq71t7j4v"]
+
+[ext_resource type="Script" uid="uid://d3iundk5xnug4" path="res://entities/board/board.gd" id="1_k7u3y"]
+[ext_resource type="PackedScene" uid="uid://cir12cpm1kaw2" path="res://entities/board/tile/tile.tscn" id="2_snp00"]
+[ext_resource type="PackedScene" uid="uid://sfu5ej4glwwj" path="res://entities/piece/piece.tscn" id="3_s8wxl"]
+
+[node name="Board" type="TileMapLayer"]
+script = ExtResource("1_k7u3y")
+tile_scene = ExtResource("2_snp00")
+piece_scene = ExtResource("3_s8wxl")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="Tiles" type="Node2D" parent="."]
+
+[node name="Pieces" type="Node2D" parent="."]

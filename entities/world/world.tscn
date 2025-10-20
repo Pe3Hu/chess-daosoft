@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=3 uid="uid://dpq0g6jrlkuea"]
 
 [ext_resource type="Script" uid="uid://b12ycqhctu6gd" path="res://entities/world/world.gd" id="1_sbgiu"]
-[ext_resource type="PackedScene" uid="uid://bj5dpq71t7j4v" path="res://entities/chess_board/chessboard.tscn" id="2_tytc4"]
-[ext_resource type="PackedScene" uid="uid://crjit13a74tgg" path="res://entities/chess_notation/chess_notation.tscn" id="3_gi14s"]
+[ext_resource type="PackedScene" uid="uid://bj5dpq71t7j4v" path="res://entities/board/board.tscn" id="2_tytc4"]
+[ext_resource type="PackedScene" uid="uid://crjit13a74tgg" path="res://entities/notation/notation.tscn" id="3_gi14s"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tytc4"]
 bg_color = Color(0.39308554, 0.39308554, 0.39308533, 1)

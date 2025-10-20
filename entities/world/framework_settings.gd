@@ -7,7 +7,8 @@ const TILE_SIZE: Vector2 = Vector2(32, 32)
 const AXIS_OFFSET: Vector2 = Vector2(16, 16)
 
 #"rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR"
-const START_FEN: String = "rnbkqbnr/pppppppp/8/8/8/9/PPPPPPP/RNBKQBNR"# w KQkq - 0 1"
+#"RNBKQBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbkqbnr"
+const START_FEN: String = "R2K3R/8/8/8/8/8/8/r2k3r"# w KQkq - 0 1"
 
 const AXIS_X: Array[String] = ["a","b","c","d","e","f","g","h"]
 const AXIS_Y: Array[String] = ["1","2","3","4","5","6","7","8"]
@@ -83,7 +84,9 @@ enum MoveType {
 	PASSANT = 2,
 	CHECK = 3,
 	CHECKMATE = 4,
-	DRAW = 5
+	DRAW = 5,
+	PROMOTION = 6,
+	CASTLING = 7
 }
 
 var squre_to_direction
@@ -110,14 +113,16 @@ func init_move_to_symbol() -> void:
 	move_to_symbol[MoveType.CHECK] = "+" 
 	move_to_symbol[MoveType.CHECKMATE] = "#" 
 	move_to_symbol[MoveType.DRAW] = "=" 
+	move_to_symbol[MoveType.PROMOTION] = "=" 
+	move_to_symbol[MoveType.CASTLING] = "O-O" 
 	
-func check_is_chess_tile_id_is_valid(chess_tile_id_: int) -> bool:
-	return chess_tile_id_ >= 0 and chess_tile_id_ < BOARD_SIZE.x * BOARD_SIZE.y
+func check_is_tile_id_is_valid(tile_id_: int) -> bool:
+	return tile_id_ >= 0 and tile_id_ < BOARD_SIZE.x * BOARD_SIZE.y
 	
-func check_is_chess_tile_id_is_on_borad_edge(chess_tile_id_: int) -> bool:
-	var x = chess_tile_id_ % BOARD_SIZE.x
-	var y = chess_tile_id_ * (1.0 / BOARD_SIZE.x)
+func check_is_tile_id_is_on_borad_edge(tile_id_: int) -> bool:
+	var x = tile_id_ % BOARD_SIZE.x
+	var y = tile_id_ * (1.0 / BOARD_SIZE.x)
 	return x == 0 or y == 0 or x == BOARD_SIZE.x - 1 or y == BOARD_SIZE.y - 1
 	
-func check_is_chess_tile_coord_is_valid(chess_tile_coord_: Vector2i) -> bool:
-	return chess_tile_coord_.x >= 0 and chess_tile_coord_.y >= 0 and chess_tile_coord_.x < BOARD_SIZE.x and chess_tile_coord_.y < BOARD_SIZE.y
+func check_is_tile_coord_is_valid(tile_coord_: Vector2i) -> bool:
+	return tile_coord_.x >= 0 and tile_coord_.y >= 0 and tile_coord_.x < BOARD_SIZE.x and tile_coord_.y < BOARD_SIZE.y

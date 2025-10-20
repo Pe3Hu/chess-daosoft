@@ -1,9 +1,0 @@
-[gd_resource type="Resource" script_class="ChessPieceTemplateResource" load_steps=2 format=3 uid="uid://b6jho2ia21657"]
-
-[ext_resource type="Script" uid="uid://b55cr24ikwmhf" path="res://entities/chess_piece/templates/chess_piece_template_resource.gd" id="1_ge404"]
-
-[resource]
-script = ExtResource("1_ge404")
-type = 4
-color = 8
-metadata/_custom_type_script = "uid://b55cr24ikwmhf"
