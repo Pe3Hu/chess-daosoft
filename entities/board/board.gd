@@ -2,10 +2,17 @@ class_name Board
 extends TileMapLayer
 
 
-@export var notation: Notation
 @export var tile_scene: PackedScene
 @export var piece_scene: PackedScene
-@export var resource: BoardResource = BoardResource.new()
+
+@export var game: Game
+var resource: Resource:
+	set(value_):
+		resource = value_
+		
+		position = FrameworkSettings.TILE_SIZE * 0.5 + FrameworkSettings.AXIS_OFFSET
+		init_tiles()
+		init_pieces()
 
 @onready var tiles: Node2D = $Tiles
 @onready var pieces: Node2D = $Pieces
@@ -13,13 +20,7 @@ extends TileMapLayer
 var resource_to_piece: Dictionary
 
 
-func _ready() -> void:
-	position = FrameworkSettings.TILE_SIZE * 0.5 + FrameworkSettings.AXIS_OFFSET
-	init_tiles()
-	init_pieces()
-	
 func init_tiles() -> void:
-	
 	for tile_resource in resource.tiles:
 		add_tile(tile_resource)
 	

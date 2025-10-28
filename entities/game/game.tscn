@@ -1,0 +1,53 @@
+[gd_scene load_steps=6 format=3 uid="uid://dp0wkdcq68046"]
+
+[ext_resource type="PackedScene" uid="uid://bj5dpq71t7j4v" path="res://entities/board/board.tscn" id="1_j054j"]
+[ext_resource type="Script" uid="uid://pfaceqdmhe5d" path="res://entities/game/game.gd" id="1_vjvwb"]
+[ext_resource type="PackedScene" uid="uid://dciyh0oe46td0" path="res://entities/referee/referee.tscn" id="2_vjvwb"]
+[ext_resource type="PackedScene" uid="uid://crjit13a74tgg" path="res://entities/notation/notation.tscn" id="3_vbwj1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tytc4"]
+bg_color = Color(0.39308554, 0.39308554, 0.39308533, 1)
+
+[node name="Game" type="PanelContainer"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -228.5
+offset_top = -144.0
+offset_right = 228.5
+offset_bottom = 144.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+mouse_filter = 1
+script = ExtResource("1_vjvwb")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="BoardPanel" type="PanelContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(288, 288)
+layout_mode = 2
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_tytc4")
+
+[node name="Board" parent="HBoxContainer/BoardPanel" node_paths=PackedStringArray("game") instance=ExtResource("1_j054j")]
+unique_name_in_owner = true
+game = NodePath("../../..")
+
+[node name="Referee" parent="HBoxContainer" node_paths=PackedStringArray("game") instance=ExtResource("2_vjvwb")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+game = NodePath("../..")
+
+[node name="Notation" parent="HBoxContainer" node_paths=PackedStringArray("game") instance=ExtResource("3_vbwj1")]
+unique_name_in_owner = true
+layout_mode = 2
+game = NodePath("../..")

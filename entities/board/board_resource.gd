@@ -2,7 +2,7 @@ class_name BoardResource
 extends Resource
 
 
-var notation: NotationResource = NotationResource.new()
+var game: GameResource
 var tiles: Array[TileResource]
 var legal_tiles: Array[TileResource]
 var focus_tile: TileResource:
@@ -20,7 +20,8 @@ var captured_templates: Dictionary
 var buttom_color: FrameworkSettings.PieceColor = FrameworkSettings.PieceColor.BLACK
 
 
-func _init() -> void:
+func _init(game_: GameResource) -> void:
+	game = game_
 	init_tiles()
 	#add_piece(FrameworkSettings.PieceColor.BLACK | FrameworkSettings.PieceType.BISHOP, 25)
 	#focus_tile = tiles[25]

@@ -1,9 +1,11 @@
-RichTextLabel
-Label
-HBoxContainer
-VBoxContainer
-Node
 PanelContainer
+VBoxContainer
+Timer
+ColorRect
+HBoxContainer
+Label
+RichTextLabel
+Node
 CollisionShape2D
 Area2D
 Camera2D

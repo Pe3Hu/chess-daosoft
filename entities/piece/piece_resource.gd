@@ -71,6 +71,7 @@ func generate_king_castling_moves() -> void:
 			if castling_rook.is_inactive:
 				var target_tile = tile.windrose_to_sequence[castling_windrose_offset][1]
 				add_move(target_tile, null, castling_rook)
+				pass
 	
 func geterate_pawn_moves() -> void:
 	geterate_pawn_advance_moves()
@@ -220,4 +221,3 @@ func get_move(target_tile_: TileResource) -> Variant:
 			return move
 	
 	return null
-	

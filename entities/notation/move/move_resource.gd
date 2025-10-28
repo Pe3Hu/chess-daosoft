@@ -29,6 +29,7 @@ func check_capture() -> void:
 			type = FrameworkSettings.MoveType.PASSANT
 	
 func check_pawn_promotion() -> void:
+	if piece.template.type != FrameworkSettings.PieceType.PAWN: return
 	if end_tile.coord.y == 0 and piece.template.color == FrameworkSettings.PieceColor.WHITE:
 		type = FrameworkSettings.MoveType.PROMOTION
 	if end_tile.coord.y == 7 and piece.template.color == FrameworkSettings.PieceColor.BLACK:
@@ -41,6 +42,8 @@ func pawn_promotion(new_piece_type_: FrameworkSettings.PieceType = FrameworkSett
 	
 func check_castling() -> void:
 	if piece.template.type != FrameworkSettings.PieceType.KING: return
-	var l = start_tile.coord.distance_to(end_tile.coord)
+	var x = abs(start_tile.coord.x - end_tile.coord.x)
+	var y = abs(start_tile.coord.y - end_tile.coord.y)
+	var l = max(x, y)#start_tile.coord.distance_squared_to(end_tile.coord)
 	if l > 1:
 		type = FrameworkSettings.MoveType.CASTLING

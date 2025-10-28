@@ -51,7 +51,10 @@ func _on_area_2d_input_event(_viewport: Node, _event: InputEvent, _shape_idx: in
 		else:
 			#take Piece if focus_tile is free
 			if board.resource.focus_tile == null:# and resource.piece:
-				board.hold_piece_on_tile(self)
+				#check active player piece color
+				if board.resource.game.referee.active_player.color == resource.piece.template.color:
+					board.hold_piece_on_tile(self)
+				
 				return
 			
 			var target_piece = board.resource_to_piece[resource.piece]

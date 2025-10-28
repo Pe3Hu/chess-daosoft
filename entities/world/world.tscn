@@ -1,41 +1,12 @@
-[gd_scene load_steps=5 format=3 uid="uid://dpq0g6jrlkuea"]
+[gd_scene load_steps=3 format=3 uid="uid://dpq0g6jrlkuea"]
 
 [ext_resource type="Script" uid="uid://b12ycqhctu6gd" path="res://entities/world/world.gd" id="1_sbgiu"]
-[ext_resource type="PackedScene" uid="uid://bj5dpq71t7j4v" path="res://entities/board/board.tscn" id="2_tytc4"]
-[ext_resource type="PackedScene" uid="uid://crjit13a74tgg" path="res://entities/notation/notation.tscn" id="3_gi14s"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tytc4"]
-bg_color = Color(0.39308554, 0.39308554, 0.39308533, 1)
+[ext_resource type="PackedScene" uid="uid://dp0wkdcq68046" path="res://entities/game/game.tscn" id="2_tytc4"]
 
 [node name="World" type="Node"]
 script = ExtResource("1_sbgiu")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -180.0
-offset_top = -128.0
-offset_right = 180.0
-offset_bottom = 128.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-
-[node name="ChessboardPanel" type="PanelContainer" parent="HBoxContainer"]
-custom_minimum_size = Vector2(288, 288)
-layout_mode = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_tytc4")
-
-[node name="Chessboard" parent="HBoxContainer/ChessboardPanel" node_paths=PackedStringArray("notation") instance=ExtResource("2_tytc4")]
-notation = NodePath("../../ChessNotation")
-
-[node name="ChessNotation" parent="HBoxContainer" instance=ExtResource("3_gi14s")]
-layout_mode = 2
+[node name="Game" parent="." instance=ExtResource("2_tytc4")]
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(584, 324)

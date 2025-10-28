@@ -4,6 +4,10 @@ extends PanelContainer
 
 @export var move_scene: PackedScene
 
+@export var game: Game
+
+var resource: NotationResource
+
 @onready var moves: = %Moves
 
 

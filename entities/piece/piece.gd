@@ -9,6 +9,7 @@ var resource: PieceResource:
 		
 		update_sprite()
 		position = Vector2(resource.tile.coord) * FrameworkSettings.TILE_SIZE
+
 @export_enum("pawn", "king", "queen", "rook", "bishop", "knight") var type = "pawn":
 	set(value_):
 		type = value_
@@ -50,8 +51,8 @@ func place_on_tile(tile_: Tile) -> void:
 		if resource.is_inactive:
 			resource.is_inactive = false
 		
-		board.resource.notation.record_move(move_resource)
-		board.notation.add_move(move_resource)
+		board.game.resource.notation.record_move(move_resource)
+		board.game.notation.add_move(move_resource)
 		
 		match move_resource.type:
 			FrameworkSettings.MoveType.CAPTURE:
@@ -72,6 +73,7 @@ func place_on_tile(tile_: Tile) -> void:
 	
 	board.reset_focus_tile()
 	board.resource.focus_tile = null
+	board.game.referee.pass_initiative()
 	
 func capture() -> void:
 	board.resource.capture_piece(resource)
@@ -82,7 +84,7 @@ func promotion() -> void:
 	update_sprite()
 	
 func complement_castling_move() -> void:
-	var move_resource = board.resource.notation.moves.back()
+	var move_resource = board.game.resource.notation.moves.back()
 	var rook_piece = board.resource_to_piece[move_resource.castling_rook]
 	var rook_direction = Vector2(rook_piece.resource.tile.coord - resource.tile.coord).normalized()
 	var next_root_tile_coord = resource.tile.coord + Vector2i(rook_direction)

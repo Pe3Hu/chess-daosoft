@@ -8,7 +8,7 @@ const AXIS_OFFSET: Vector2 = Vector2(16, 16)
 
 #"rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR"
 #"RNBKQBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbkqbnr"
-const START_FEN: String = "R2K3R/8/8/8/8/8/8/r2k3r"# w KQkq - 0 1"
+const START_FEN: String = "R2K3R/8/8/8/8/8/8/r2r3k"# w KQkq - 0 1"
 
 const AXIS_X: Array[String] = ["a","b","c","d","e","f","g","h"]
 const AXIS_Y: Array[String] = ["1","2","3","4","5","6","7","8"]
@@ -77,6 +77,9 @@ enum PieceColor {
 	WHITE = 8,      # 01000
 	BLACK = 16      # 10000
 }
+
+var PIECE_COLORS = [PieceColor.WHITE, PieceColor.BLACK]
+
 
 enum MoveType {
 	FREE = 0,
