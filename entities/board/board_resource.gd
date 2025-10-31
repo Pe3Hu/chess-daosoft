@@ -71,17 +71,18 @@ func load_position_from_fen(fen_: String) -> void:
 				add_piece(template_id, tile_index)
 				file += 1
 	
-func add_piece(template_id_: int, tile_index_: int,) -> void:
+func add_piece(template_id_: int, tile_index_: int) -> void:
 	var template = load("res://entities/piece/templates/" + str(template_id_) + ".tres")
+	var player = game.referee.color_to_player[template.color]
 	var tile = tiles[tile_index_]
-	var piece = PieceResource.new(self, template, tile)
+	var piece = PieceResource.new(self, player, template, tile)
 	pieces.append(piece)
 	
 func update_tile_states() -> void:
 	focus_tile.current_state = FrameworkSettings.TileState.CURRENT
-	focus_tile.piece.geterate_legal_moves()
+	var legal_moves = focus_tile.piece.geterate_legal_moves()
 	
-	for move in focus_tile.piece.moves:
+	for move in legal_moves:
 		move.end_tile.current_state = FrameworkSettings.TileState.NEXT
 		legal_tiles.append(move.end_tile)
 	
@@ -90,14 +91,51 @@ func reset_tile_states() -> void:
 	focus_tile.current_state = FrameworkSettings.TileState.NONE
 	
 	for legal_tile in legal_tiles:
-		legal_tile.current_state = FrameworkSettings.TileState.NEXT
+		legal_tile.current_state = FrameworkSettings.TileState.NONE
 	
 	legal_tiles.clear()
 	
 func capture_piece(piece_: PieceResource) -> void:
 	if !captured_templates.has(piece_.template):
-		captured_templates[piece_] = 0
+		captured_templates[piece_.template] = 0
 	
-	captured_templates[piece_] += 1
+	piece_.unpin()
+	captured_templates[piece_.template] += 1
 	piece_.tile.piece = null
 	pieces.erase(piece_)
+	piece_.player.pieces.erase(piece_)
+	
+func make_move(move_: MoveResource) -> void:
+	if move_.captured_piece != null:
+		capture_piece(move_.captured_piece)
+	
+	move_.end_tile.place_piece(move_.piece)
+	
+	for piece in pieces:
+		piece.is_fresh = false
+	
+	game.referee.pass_initiative()
+	
+func unmake_move(move_: MoveResource) -> void:
+	move_.start_tile.place_piece(move_.piece)#, true)
+	
+	if move_.captured_piece != null:
+		move_.end_tile.place_piece(move_.captured_piece)#, true)
+		pieces.append(move_.captured_piece)
+		move_.captured_piece.player.pieces.append(move_.captured_piece)
+		captured_templates[move_.captured_piece.template] -= 1
+	
+	for piece in pieces:
+		piece.is_fresh = false
+	
+	game.referee.pass_initiative()
+	
+func reset() -> void:
+	while !pieces.is_empty():
+		capture_piece(pieces.pop_back())
+	
+	for tile in tiles:
+		tile.reset()
+	
+	captured_templates = {}
+	load_position_from_fen(FrameworkSettings.START_FEN)

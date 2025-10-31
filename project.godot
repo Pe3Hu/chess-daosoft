@@ -22,6 +22,8 @@ FrameworkSettings="*res://entities/world/framework_settings.gd"
 
 [display]
 
+window/size/viewport_width=1800
+window/size/viewport_height=800
 window/stretch/mode="canvas_items"
 
 [gui]

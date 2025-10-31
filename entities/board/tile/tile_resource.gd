@@ -4,6 +4,7 @@ extends Resource
 
 var board: BoardResource
 var piece: PieceResource
+var pin_piece: PieceResource
 var coord: Vector2i
 
 var id: int
@@ -38,6 +39,19 @@ func check_tile_on_same_axis(tile_: TileResource) -> bool:
 	
 func place_piece(piece_: PieceResource) -> void:
 	if piece != null: return
+	if piece_ == piece: return
+	
+	if piece_.tile != null:
+		piece_.tile.piece = null
 	
 	piece = piece_
 	piece.tile = self
+	piece.unpin()
+	
+	if pin_piece != null:
+		pin_piece.unpin()
+	
+func reset() -> void:
+	piece = null
+	pin_piece = null
+	current_state = FrameworkSettings.TileState.NONE

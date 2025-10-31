@@ -29,18 +29,27 @@ func update_modulate(state_: FrameworkSettings.TileState) -> void:
 		FrameworkSettings.TileState.NONE:
 			modulate = Color.WHITE
 		FrameworkSettings.TileState.CURRENT:
-			modulate = Color.FIREBRICK
+			modulate = Color.DIM_GRAY
 		FrameworkSettings.TileState.NEXT:
 			modulate = Color.SEA_GREEN
+		FrameworkSettings.TileState.CAPTURE:
+			modulate = Color.BLUE_VIOLET
+		FrameworkSettings.TileState.PIN:
+			modulate = Color.DEEP_PINK
+		FrameworkSettings.TileState.CHECK:
+			modulate = Color.ROYAL_BLUE
 	
 func _on_area_2d_input_event(_viewport: Node, _event: InputEvent, _shape_idx: int) -> void:
 	if _event.is_action_pressed("click"):
+		if board.game.on_pause: return
+		if board.game.referee.resource.winner_player != null: return
 		var is_free = resource.piece == null
 		
 		if is_free:
 			if board.resource.focus_tile != null:
 				#put СhessPiece in its legal Tile
-				if board.resource.focus_tile.piece.is_valid_tile(resource):
+				#if board.resource.focus_tile.piece.is_valid_tile(resource):
+				if resource.current_state == FrameworkSettings.TileState.CURRENT or resource.current_state == FrameworkSettings.TileState.NEXT:
 					var piece = board.resource_to_piece[board.resource.focus_tile.piece]
 					piece.place_on_tile(self)
 				#return Piece to its original Tile if move is illegal
@@ -54,7 +63,6 @@ func _on_area_2d_input_event(_viewport: Node, _event: InputEvent, _shape_idx: in
 				#check active player piece color
 				if board.resource.game.referee.active_player.color == resource.piece.template.color:
 					board.hold_piece_on_tile(self)
-				
 				return
 			
 			var target_piece = board.resource_to_piece[resource.piece]

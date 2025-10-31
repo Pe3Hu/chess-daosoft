@@ -46,13 +46,14 @@ func place_on_tile(tile_: Tile) -> void:
 		resource.tile.piece = null
 	
 	var move_resource = resource.get_move(tile_.resource)
+	var is_passing_initiative = move_resource != null
 	
 	if move_resource != null:
 		if resource.is_inactive:
 			resource.is_inactive = false
 		
-		board.game.resource.notation.record_move(move_resource)
-		board.game.notation.add_move(move_resource)
+		#ignoring rook move after king castling
+		is_passing_initiative = board.game.resource.notation.record_move(move_resource)
 		
 		match move_resource.type:
 			FrameworkSettings.MoveType.CAPTURE:
@@ -71,9 +72,16 @@ func place_on_tile(tile_: Tile) -> void:
 	global_position = tile_.global_position
 	tile_.resource.place_piece(resource)
 	
+	#recalculation of moves after castling is completed
+	#if !is_not_castling_move:
+	#	resource.player.opponent.generate_legal_moves()
+	
 	board.reset_focus_tile()
 	board.resource.focus_tile = null
-	board.game.referee.pass_initiative()
+	
+	if is_passing_initiative:
+		board.game.notation.add_move(move_resource)
+		board.game.referee.pass_initiative()
 	
 func capture() -> void:
 	board.resource.capture_piece(resource)

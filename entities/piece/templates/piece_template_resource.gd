@@ -3,4 +3,4 @@ extends Resource
 
 
 @export var type: FrameworkSettings.PieceType
-@export var color: FrameworkSettings.PieceColor
+@export var color: FrameworkSettings.PieceColor = FrameworkSettings.PieceColor.WHITE

@@ -34,6 +34,11 @@ func get_tile(tile_resource_: TileResource) -> Tile:
 	return tiles.get_child(tile_resource_.id)
 	
 func init_pieces() -> void:
+	while pieces.get_child_count() > 0:
+		var piece = pieces.get_child(0)
+		pieces.remove_child(piece)
+		piece.queue_free()
+	
 	for piece_resource in resource.pieces:
 		add_piece(piece_resource)
 	
@@ -64,6 +69,8 @@ func reset_focus_tile() -> void:
 		var tile = tiles.get_child(tile_resource.id)
 		tile.update_modulate(FrameworkSettings.TileState.NONE)
 	
+	update_tile_threat_state()
+	
 func update_focus_tile() -> void:
 	var focust_tile = tiles.get_child(resource.focus_tile.id)
 	focust_tile.update_state()
@@ -75,3 +82,51 @@ func update_focus_tile() -> void:
 func hold_piece() -> void:
 	var piece = resource_to_piece[resource.focus_tile.piece]
 	piece.is_holden = true
+	
+func initial_tile_state_update() -> void:
+	update_tile_threat_state()
+	
+func update_tile_threat_state() -> void:
+	for move in resource.game.referee.active_player.opponent.capture_moves:
+		var tile = tiles.get_child(move.end_tile.id)
+		tile.update_modulate(FrameworkSettings.TileState.CAPTURE)
+	
+	for move in resource.game.referee.active_player.opponent.pin_moves:
+		var tile = tiles.get_child(move.end_tile.id)
+		tile.update_modulate(FrameworkSettings.TileState.PIN)
+	
+	for tile_resource in resource.game.referee.active_player.opponent.check_tiles:
+		var tile = tiles.get_child(tile_resource.id)
+		tile.update_modulate(FrameworkSettings.TileState.CHECK)
+	
+func reset_initiative_tile() -> void:
+	for move in resource.game.referee.active_player.opponent.capture_moves:
+		var tile = tiles.get_child(move.end_tile.id)
+		tile.update_modulate(FrameworkSettings.TileState.NONE)
+	
+	for move in resource.game.referee.active_player.opponent.pin_moves:
+		var tile = tiles.get_child(move.end_tile.id)
+		tile.update_modulate(FrameworkSettings.TileState.NONE)
+	
+	for tile_resource in resource.game.referee.active_player.opponent.check_tiles:
+		var tile = tiles.get_child(tile_resource.id)
+		tile.update_modulate(FrameworkSettings.TileState.NONE)
+	
+func apply_move(move_resource_: MoveResource) -> void:
+	if move_resource_.captured_piece != null:
+		var captured_piece = get_piece(move_resource_.captured_piece)
+		captured_piece.capture()
+	
+	var piece = get_piece(move_resource_.piece)
+	var tile = get_tile(move_resource_.end_tile)
+	piece.place_on_tile(tile)
+	
+func reset() -> void:
+	resource.reset()
+	
+	for tile in tiles.get_children():
+		tile.update_state()
+	
+	init_pieces()
+	initial_tile_state_update()
+	game.resource.before_first_move()

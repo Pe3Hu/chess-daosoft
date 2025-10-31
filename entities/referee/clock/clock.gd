@@ -4,6 +4,8 @@ extends PanelContainer
 
 signal switch
 
+@export var referee: Referee
+
 var resource: ClockResource:
 	set(value_):
 		resource = value_
@@ -13,9 +15,14 @@ var resource: ClockResource:
 		else:
 			%ColorRect.color = Color.BLACK
 
+@onready var tick_timer: Timer = %TickTimer
+
 
 func _on_tick_timer_timeout() -> void:
 	resource.seconds -= 1
+	update_label()
+	
+func update_label() -> void:
 	var minutes = str(resource.minutes)
 	var seconds = str(resource.seconds)
 	
@@ -23,10 +30,13 @@ func _on_tick_timer_timeout() -> void:
 		seconds = "0" + seconds
 	
 	%Time.text = minutes + ":" + seconds
-
-
+	
+	if resource.minutes == 0 and resource.seconds == 0:
+		referee.resource.winner_player = resource.player.opponent
+		referee.check_gameover()
+	
 func _on_switch() -> void:
-	if %TickTimer.is_stopped():
-		%TickTimer.start()
+	if tick_timer.is_stopped():
+		tick_timer.start()
 	else:
-		%TickTimer.stop()
+		tick_timer.stop()

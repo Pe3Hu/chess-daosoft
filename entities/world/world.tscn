@@ -8,8 +8,8 @@ script = ExtResource("1_sbgiu")
 
 [node name="Game" parent="." instance=ExtResource("2_tytc4")]
 
-[node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(584, 324)
+[node name="Camera2D" type="Camera2D" parent="Game"]
+position = Vector2(289, 131)
 zoom = Vector2(2, 2)
 
 [node name="FPS" type="Label" parent="."]

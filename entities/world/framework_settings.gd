@@ -6,9 +6,13 @@ const BOARD_SIZE: Vector2i = Vector2i(8, 8)
 const TILE_SIZE: Vector2 = Vector2(32, 32)
 const AXIS_OFFSET: Vector2 = Vector2(16, 16)
 
-#"rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR"
-#"RNBKQBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbkqbnr"
-const START_FEN: String = "R2K3R/8/8/8/8/8/8/r2r3k"# w KQkq - 0 1"
+const CLOCK_START_MIN: int = 5
+const CLOCK_START_SEC: int = 0
+
+#"Q1rkr2R/2ppp3/8/b7/8/8/4P3/4K3"
+#"r1NK3r/2NP4/3Q4/b/8/8/pppppppp/rnbkqbQr"
+#"RNBKQBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbkqbnr" # w KQkq - 0 1"
+const START_FEN: String = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr"
 
 const AXIS_X: Array[String] = ["a","b","c","d","e","f","g","h"]
 const AXIS_Y: Array[String] = ["1","2","3","4","5","6","7","8"]
@@ -46,6 +50,12 @@ const KNIGHT_MOVES = [
 	Vector2i(-2,-1)
 ]
 
+const SLIDE_PIECES = [
+	PieceType.BISHOP,
+	PieceType.ROOK,
+	PieceType.QUEEN
+]
+
 enum WindroseOffset {
 	N = -8,
 	NE = -7,
@@ -61,6 +71,9 @@ enum TileState {
 	NONE = 0,
 	CURRENT = 1,
 	NEXT = 2,
+	CAPTURE = 3,
+	CHECK = 4,
+	PIN = 5,
 }
 
 enum PieceType {
@@ -79,7 +92,6 @@ enum PieceColor {
 }
 
 var PIECE_COLORS = [PieceColor.WHITE, PieceColor.BLACK]
-
 
 enum MoveType {
 	FREE = 0,

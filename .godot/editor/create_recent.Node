@@ -1,14 +1,14 @@
-PanelContainer
+Label
+CheckButton
+Button
 VBoxContainer
+CheckButton      - Matches the "toggle" keyword.
+PanelContainer
 Timer
 ColorRect
 HBoxContainer
-Label
 RichTextLabel
 Node
 CollisionShape2D
 Area2D
 Camera2D
-Node2D
-Sprite2D
-TileMapLayer

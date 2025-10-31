@@ -6,6 +6,7 @@
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_7wtg7"]
 
 [node name="Referee" type="PanelContainer"]
+visible = false
 theme_override_styles/panel = SubResource("StyleBoxEmpty_7wtg7")
 script = ExtResource("1_7wtg7")
 
@@ -14,12 +15,14 @@ unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
 
-[node name="WhiteClock" parent="Clocks" instance=ExtResource("2_wkvbo")]
+[node name="WhiteClock" parent="Clocks" node_paths=PackedStringArray("referee") instance=ExtResource("2_wkvbo")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
+referee = NodePath("../..")
 
-[node name="BlackClock" parent="Clocks" instance=ExtResource("2_wkvbo")]
+[node name="BlackClock" parent="Clocks" node_paths=PackedStringArray("referee") instance=ExtResource("2_wkvbo")]
 unique_name_in_owner = true
 layout_mode = 2
+referee = NodePath("../..")
