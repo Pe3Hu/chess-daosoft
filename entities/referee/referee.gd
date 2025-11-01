@@ -31,6 +31,7 @@ func start_game() -> void:
 	
 func pass_initiative() -> void:
 	game.board.reset_initiative_tile()
+	apply_mods()
 	resource.pass_initiative()
 	
 	if !check_gameover():
@@ -64,8 +65,40 @@ func apply_bot_move() -> void:
 	
 func update_clocks() -> void:
 	for clock in clocks.get_children():
-		clock.update_label()
+		clock.update_time_label()
+		clock.update_sacrifice_label()
 	
 func reset() -> void:
 	resource.reset()
 	update_clocks()
+	
+func apply_mods() -> void:
+	apply_void_mod()
+	
+func apply_void_mod() -> void:
+	var escape_piece_resources = []
+	
+	for move_resource in resource.active_player.opponent.capture_moves:
+		if !escape_piece_resources.has(move_resource.captured_piece):
+			escape_piece_resources.append(move_resource.captured_piece)
+	
+	for piece_resource in escape_piece_resources:
+		if piece_resource.failure_on_escape_trial():
+			var piece = game.board.get_piece(piece_resource)
+			piece.capture()
+	
+func fox_mod_preparation() -> void:
+	resource.fox_swap_players.append_array(resource.players)
+	
+	for player in resource.players:
+		player.fill_fox_swap_pieces()
+	
+	game.menu.update_bots()
+	game.board.fox_mod_tile_state_update()
+	
+func get_player_clock(player_resource_: PlayerResource) -> Variant:
+	for clock in clocks.get_children():
+		if clock.resource == player_resource_.clock:
+			return clock
+	
+	return null

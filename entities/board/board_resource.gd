@@ -15,6 +15,7 @@ var focus_tile: TileResource:
 
 var pieces: Array[PieceResource]
 var captured_templates: Dictionary
+var altar_tile: TileResource
 
 
 var buttom_color: FrameworkSettings.PieceColor = FrameworkSettings.PieceColor.BLACK
@@ -25,7 +26,7 @@ func _init(game_: GameResource) -> void:
 	init_tiles()
 	#add_piece(FrameworkSettings.PieceColor.BLACK | FrameworkSettings.PieceType.BISHOP, 25)
 	#focus_tile = tiles[25]
-	load_position_from_fen(FrameworkSettings.START_FEN)
+	load_position()
 	
 func init_tiles() -> void:
 	for file in FrameworkSettings.BOARD_SIZE.y:
@@ -50,7 +51,7 @@ func add_tile(coord_: Vector2i) -> void:
 func load_position_from_fen(fen_: String) -> void:
 	var fen_board: String = fen_.split(' ')[0]
 	var file: int = 0
-	var rank: int = 7
+	var rank: int = FrameworkSettings.BOARD_SIZE.x - 1
 	
 	for symbol in fen_board:
 		if symbol == "/":
@@ -138,4 +139,37 @@ func reset() -> void:
 		tile.reset()
 	
 	captured_templates = {}
-	load_position_from_fen(FrameworkSettings.START_FEN)
+	load_position()
+	
+func load_position() -> void:
+	match FrameworkSettings.BOARD_SIZE:
+		FrameworkSettings.DEFAULT_BOARD_SIZE: 
+			load_position_from_fen(FrameworkSettings.START_FEN)
+		FrameworkSettings.GAMBIT_BOARD_SIZE: 
+			altar_tile = get_tile_based_on_coord(FrameworkSettings.ALTAR_COORD)
+			altar_tile.current_state = FrameworkSettings.TileState.AlTAR
+			load_position_from_fen(FrameworkSettings.START_GAMBIT_FEN)
+	
+	
+func resize() -> void:
+	remove_tiles()
+	remove_pieces()
+	
+	init_tiles()
+	load_position()
+	
+	
+	game.before_first_move()
+	
+func remove_tiles() -> void:
+	tiles.clear()
+	legal_tiles.clear()
+	focus_tile = null
+	
+func remove_pieces() -> void:
+	captured_templates = {}
+	pieces.clear()
+	
+	for player in game.referee.players:
+		player.pieces.clear()
+		player.reset()

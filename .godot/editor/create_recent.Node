@@ -1,14 +1,15 @@
+TextureRect
+HBoxContainer
+PanelContainer
+Sprite2D
 Label
+VBoxContainer
+ColorRect
 CheckButton
 Button
-VBoxContainer
 CheckButton      - Matches the "toggle" keyword.
-PanelContainer
 Timer
-ColorRect
-HBoxContainer
 RichTextLabel
 Node
 CollisionShape2D
 Area2D
-Camera2D

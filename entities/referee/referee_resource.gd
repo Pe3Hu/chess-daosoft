@@ -5,6 +5,7 @@ extends Resource
 var game: GameResource
 
 var players: Array[PlayerResource]
+var fox_swap_players: Array[PlayerResource]
 var color_to_player: Dictionary
 
 var active_player: PlayerResource

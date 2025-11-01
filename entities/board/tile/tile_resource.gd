@@ -3,7 +3,10 @@ extends Resource
 
 
 var board: BoardResource
-var piece: PieceResource
+var piece: PieceResource:
+	set(value_):
+		if board.altar_tile != self:
+			piece = value_
 var pin_piece: PieceResource
 var coord: Vector2i
 
@@ -45,8 +48,8 @@ func place_piece(piece_: PieceResource) -> void:
 		piece_.tile.piece = null
 	
 	piece = piece_
-	piece.tile = self
-	piece.unpin()
+	piece_.tile = self
+	piece_.unpin()
 	
 	if pin_piece != null:
 		pin_piece.unpin()

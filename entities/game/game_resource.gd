@@ -6,6 +6,8 @@ var notation: NotationResource = NotationResource.new(self)
 var referee: RefereeResource = RefereeResource.new(self)
 var board: BoardResource = BoardResource.new(self)
 
+var current_mod: FrameworkSettings.ModeType = FrameworkSettings.ModeType.CLASSIC
+
 
 func _init() -> void:
 	for player in referee.players:

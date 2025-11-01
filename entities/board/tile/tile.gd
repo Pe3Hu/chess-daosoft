@@ -38,9 +38,12 @@ func update_modulate(state_: FrameworkSettings.TileState) -> void:
 			modulate = Color.DEEP_PINK
 		FrameworkSettings.TileState.CHECK:
 			modulate = Color.ROYAL_BLUE
+		FrameworkSettings.TileState.AlTAR:
+			modulate = Color.BLACK
 	
 func _on_area_2d_input_event(_viewport: Node, _event: InputEvent, _shape_idx: int) -> void:
 	if _event.is_action_pressed("click"):
+		fox_piece_swap()
 		if board.game.on_pause: return
 		if board.game.referee.resource.winner_player != null: return
 		var is_free = resource.piece == null
@@ -50,12 +53,12 @@ func _on_area_2d_input_event(_viewport: Node, _event: InputEvent, _shape_idx: in
 				#put СhessPiece in its legal Tile
 				#if board.resource.focus_tile.piece.is_valid_tile(resource):
 				if resource.current_state == FrameworkSettings.TileState.CURRENT or resource.current_state == FrameworkSettings.TileState.NEXT:
-					var piece = board.resource_to_piece[board.resource.focus_tile.piece]
+					var piece = board.get_piece(board.resource.focus_tile.piece)
 					piece.place_on_tile(self)
 				#return Piece to its original Tile if move is illegal
 				else:
 					var origin_tile = board.get_tile(board.resource.focus_tile)
-					var origin_piece = board.resource_to_piece[board.resource.focus_tile.piece]
+					var origin_piece = board.get_piece(board.resource.focus_tile.piece)
 					origin_piece.place_on_tile(origin_tile)
 		else:
 			#take Piece if focus_tile is free
@@ -65,16 +68,38 @@ func _on_area_2d_input_event(_viewport: Node, _event: InputEvent, _shape_idx: in
 					board.hold_piece_on_tile(self)
 				return
 			
-			var target_piece = board.resource_to_piece[resource.piece]
+			var target_piece = board.get_piece(resource.piece)
 			
-			#capturing an opponent Piece
-			if board.resource.focus_tile.piece.is_valid_tile(resource):
-				if !target_piece.resource.is_same_color(board.resource.focus_tile.piece):
-					var origin_piece = board.resource_to_piece[board.resource.focus_tile.piece]
-					origin_piece.place_on_tile(self)
-					return
+			if target_piece != null:
+				#capturing an opponent Piece
+				if board.resource.focus_tile.piece.is_valid_tile(resource):
+					if !target_piece.resource.is_same_color(board.resource.focus_tile.piece):
+						var origin_piece = board.get_piece(board.resource.focus_tile.piece)
+						origin_piece.place_on_tile(self)
+						return
 			
 			#return Piece to its original Tile
 			if board.resource.focus_tile == resource:
-				var origin_piece = board.resource_to_piece[resource.piece]
+				var origin_piece = board.get_piece(resource.piece)
 				origin_piece.place_on_tile(self)
+	
+func fox_piece_swap() -> void:
+	if !board.game.on_pause or board.game.resource.referee.winner_player != null: return
+	if !(resource.current_state == FrameworkSettings.TileState.CURRENT or resource.current_state == FrameworkSettings.TileState.NEXT): return
+	
+	if board.resource.focus_tile == null:
+		match resource.current_state:
+			FrameworkSettings.TileState.NEXT:
+				board.hold_piece_on_tile(self)
+				resource.current_state = FrameworkSettings.TileState.CURRENT
+				update_state()
+	else:
+		var origin_piece = board.get_piece(resource.piece)
+		
+		match resource.current_state:
+			FrameworkSettings.TileState.CURRENT:
+				origin_piece.place_on_tile(self)
+				resource.current_state = FrameworkSettings.TileState.NEXT
+				update_state()
+			FrameworkSettings.TileState.NEXT:
+				board.fox_swap(origin_piece)

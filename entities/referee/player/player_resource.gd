@@ -10,16 +10,19 @@ var clock: ClockResource = ClockResource.new(self)
 var color: FrameworkSettings.PieceColor = FrameworkSettings.PieceColor.WHITE
 
 var pieces: Array[PieceResource]
+var fox_swap_pieces: Array[PieceResource]
 var king_piece: PieceResource
 
 var legal_moves: Array[MoveResource]
 var threat_moves: Array[MoveResource]
 var threat_tiles: Array[TileResource]
+var pawn_threat_tiles: Array[TileResource]
 var capture_moves: Array[MoveResource]
 var pin_moves: Array[MoveResource]
 var pin_pieces: Array[PieceResource]
 var check_moves: Array[MoveResource]
 var check_tiles: Array[TileResource]
+var sacrifice_moves: Array[MoveResource]
 var piece_to_assist: Dictionary
 
 var is_winner: bool = false
@@ -60,8 +63,23 @@ func generate_legal_moves() -> void:
 	
 func generate_king_legal_moves() -> void:
 	king_piece.geterate_moves()
+	
+	var behind_check_tiles = []
+	for check_move in opponent.check_moves:
+		var check_direction = get_unit_vector(king_piece.tile.coord - check_move.start_tile.coord)
+		var behind_check_coord = king_piece.tile.coord + check_direction
+		var behind_check_tile = board.get_tile_based_on_coord(behind_check_coord)
+		behind_check_tiles.append(behind_check_tile)
+	
 	var king_legal_moves = king_piece.moves.filter(func (a): return !opponent.threat_tiles.has(a.end_tile))
 	king_legal_moves = king_legal_moves.filter(func (a): return !opponent.piece_to_assist.keys().has(a.captured_piece))
+	king_legal_moves = king_legal_moves.filter(func (a): return !behind_check_tiles.has(a.end_tile))
+	
+	match board.game.current_mod:
+		FrameworkSettings.ModeType.GAMBIT:
+			var altar_moves = king_piece.moves.filter(func (a): return a.end_tile == board.altar_tile)
+			legal_moves.append_array(altar_moves)
+	
 	legal_moves.append_array(king_legal_moves)
 	
 func generate_legal_moves_old() -> void:
@@ -74,7 +92,6 @@ func generate_legal_moves_old() -> void:
 		
 		if !opponent.can_apply_checkmate():#opponent.generate_moves()):
 			legal_moves.append(pseudo_legal_move)
-			#print([pseudo_legal_move.end_tile.coord])
 		
 		referee.game.board.unmake_move(pseudo_legal_move)
 	
@@ -105,6 +122,7 @@ func unfresh_all_pieces() -> void:
 func find_threat_moves() -> void:
 	threat_moves.clear()
 	threat_tiles.clear()
+	pawn_threat_tiles.clear()
 	capture_moves.clear()
 	
 	for piece in pieces:
@@ -119,6 +137,7 @@ func find_threat_moves() -> void:
 			var piece_capture_moves = piece.get_capture_moves()
 			capture_moves.append_array(piece_capture_moves)
 	
+	threat_tiles.append_array(pawn_threat_tiles)
 	find_check_moves()
 	find_pin_moves()
 	
@@ -145,11 +164,6 @@ func find_pin_moves() -> void:
 			capture_move.captured_piece.pin_source_piece = capture_move.piece
 			capture_move.piece.pin_target_piece = capture_move.captured_piece
 	
-	#var test_pin_pieces = pieces.filter(func(a): return a.pin_piece != null)
-	#
-	#for piece in test_pin_pieces:
-		#print([piece.tile.id, piece.pin_piece.tile.id])
-	
 func is_king_behind_piece(capture_move_: MoveResource) -> Array:
 	if !FrameworkSettings.SLIDE_PIECES.has(capture_move_.piece.template.type): return []
 	if capture_move_.captured_piece == opponent.king_piece: return []
@@ -158,7 +172,7 @@ func is_king_behind_piece(capture_move_: MoveResource) -> Array:
 	if !check_on_axis(king_direction): return []
 	var unit_king_direction = get_unit_vector(king_direction)
 	var unit_pin_direction = get_unit_vector(capture_move_.end_tile.coord - capture_move_.start_tile.coord)
-	if king_direction != unit_pin_direction: return []
+	if unit_king_direction != unit_pin_direction: return []
 	
 	var tile_on_way_to_king = capture_move_.start_tile
 	var pint_tiles = []
@@ -199,14 +213,16 @@ func get_unit_vector(vec_: Vector2i) -> Vector2i:
 	
 func check_on_axis(vec_: Vector2i) -> bool:
 	if vec_.x == 0 or vec_.y == 0: return true
-	return vec_.x == vec_.y
+	return abs(vec_.x) == abs(vec_.y)
 	
 func reset() -> void:
 	clock.reset()
 	
+	fox_swap_pieces.clear()
 	legal_moves.clear()
 	threat_moves.clear()
 	threat_tiles.clear()
+	pawn_threat_tiles.clear()
 	capture_moves.clear()
 	pin_moves.clear()
 	pin_pieces.clear()
@@ -216,3 +232,10 @@ func reset() -> void:
 	
 	is_winner = false
 	is_bot = false
+	
+func fill_fox_swap_pieces() -> void:
+	fox_swap_pieces = pieces.filter(func(a): return a.template.type != FrameworkSettings.PieceType.PAWN)
+	
+	for piece in fox_swap_pieces:
+		piece.tile.current_state = FrameworkSettings.TileState.NEXT
+	

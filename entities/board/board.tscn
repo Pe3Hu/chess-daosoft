@@ -4,13 +4,36 @@
 [ext_resource type="PackedScene" uid="uid://cir12cpm1kaw2" path="res://entities/board/tile/tile.tscn" id="2_snp00"]
 [ext_resource type="PackedScene" uid="uid://sfu5ej4glwwj" path="res://entities/piece/piece.tscn" id="3_s8wxl"]
 
-[node name="Board" type="TileMapLayer"]
+[node name="Board" type="PanelContainer"]
+custom_minimum_size = Vector2(256, 256)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -128.0
+offset_top = -128.0
+offset_right = 128.0
+offset_bottom = 128.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+mouse_filter = 1
 script = ExtResource("1_k7u3y")
 tile_scene = ExtResource("2_snp00")
 piece_scene = ExtResource("3_s8wxl")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="BoardMapLayer" type="TileMapLayer" parent="."]
+unique_name_in_owner = true
 
-[node name="Tiles" type="Node2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="BoardMapLayer"]
 
-[node name="Pieces" type="Node2D" parent="."]
+[node name="Tiles" type="Node2D" parent="BoardMapLayer"]
+unique_name_in_owner = true
+
+[node name="Pieces" type="Node2D" parent="BoardMapLayer"]
+unique_name_in_owner = true
+
+[connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]

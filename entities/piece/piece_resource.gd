@@ -79,7 +79,6 @@ func generate_king_castling_moves() -> void:
 	for castling_offset_index in castling_offset_indexs:
 		var castling_windrose_offset = FrameworkSettings.WINDROSE_OFFSETS[castling_offset_index]
 		
-		
 		if !tile.windrose_to_sequence[castling_windrose_offset].is_empty():
 			var last_tile_in_sequence = tile.windrose_to_sequence[castling_windrose_offset].back()
 			
@@ -90,6 +89,9 @@ func generate_king_castling_moves() -> void:
 					if tile.windrose_to_sequence[castling_windrose_offset].size() < 2: return
 					var target_tile = tile.windrose_to_sequence[castling_windrose_offset][1]
 					if target_tile.piece != null: return
+					var sequence_index = tile.windrose_to_sequence[castling_windrose_offset].size() - 3
+					var king_neighbor_tile = tile.windrose_to_sequence[castling_windrose_offset][sequence_index]
+					if king_neighbor_tile.piece != null: return
 					
 					if !check_castling_under_threat(target_tile):
 						add_move(target_tile, null, castling_rook)
@@ -144,6 +146,8 @@ func geterate_pawn_capture_moves() -> void:
 					add_move(target_tile)
 				else:
 					assist_pieces.append(target_tile.piece)
+			elif !player.pawn_threat_tiles.has(target_tile):
+				player.pawn_threat_tiles.append(target_tile)
 	
 	update_assists()
 	
@@ -242,7 +246,8 @@ func add_move(target_tile_: TileResource, captured_piece_: PieceResource = null,
 func is_valid_tile(tile_: TileResource) -> bool:
 	for move in moves:
 		if move.end_tile == tile_:
-			return true
+			if player.legal_moves.has(move):
+				return true
 	
 	return false
 	
@@ -318,3 +323,13 @@ func set_pin_tiles(pin_tiles_: Array) -> void:
 	for pin_tile in pin_tiles_:
 		pin_tiles.append(pin_tile)
 		pin_tile.pin_piece = self
+	
+func success_on_stand_trial() -> bool:
+	if template.type == FrameworkSettings.PieceType.KING: return true
+	var chance = randf()
+	return chance < FrameworkSettings.VOID_CHANCE_TO_STAND
+	
+func failure_on_escape_trial() -> bool:
+	if template.type == FrameworkSettings.PieceType.KING: return false
+	var chance = randf()
+	return chance < FrameworkSettings.VOID_CHANCE_TO_ESCAPE

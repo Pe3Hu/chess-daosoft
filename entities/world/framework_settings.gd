@@ -2,20 +2,31 @@ extends Node
 
 
 
-const BOARD_SIZE: Vector2i = Vector2i(8, 8)
+const DEFAULT_BOARD_SIZE: Vector2i = Vector2i(8, 8)
 const TILE_SIZE: Vector2 = Vector2(32, 32)
 const AXIS_OFFSET: Vector2 = Vector2(16, 16)
 
 const CLOCK_START_MIN: int = 5
 const CLOCK_START_SEC: int = 0
 
-#"Q1rkr2R/2ppp3/8/b7/8/8/4P3/4K3"
-#"r1NK3r/2NP4/3Q4/b/8/8/pppppppp/rnbkqbQr"
-#"RNBKQBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbkqbnr" # w KQkq - 0 1"
-const START_FEN: String = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr"
+const VOID_CHANCE_TO_STAND: float = 0.05
+const VOID_CHANCE_TO_ESCAPE: float = 0.05
 
-const AXIS_X: Array[String] = ["a","b","c","d","e","f","g","h"]
-const AXIS_Y: Array[String] = ["1","2","3","4","5","6","7","8"]
+const GAMBIT_BOARD_SIZE: Vector2i = Vector2i(9, 9)
+const ALTAR_COORD: Vector2i = Vector2i(4, 4)
+const SACRIFICE_COUNT_FOR_VICTORY: int = 5
+
+#"r1NK3r/2NP4/3Q4/b/8/8/pppppppp/rnbkqbQr"
+#"q1NKQ2r/2PPP3/8/b7/8/8/4p3/4k3" pin
+#"RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr" classic
+#"8/8/RNBQKBNR/PPPPPPPP/pppppppp/rnbqkbnr/8/8" void
+#"8/8/RNBQKBNR/PPPP2PP/pppp2bp/rnbkq11r/8/8" check
+#"RNBQKQBNR/PPPPPPPPP/9/9/9/9/9/ppppppppp/rnbqkqbnr" gambit
+const START_FEN: String = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr"
+const START_GAMBIT_FEN: String = "9/9/RNBQKQBNR/PPPB1BPPP/9/ppppppppp/rnbqkqbnr/9/9"
+
+const AXIS_X: Array[String] = ["a","b","c","d","e","f","g","h","i"]
+const AXIS_Y: Array[String] = ["1","2","3","4","5","6","7","8","9"]
 
 const WINDROSE_OFFSETS = [
 	WindroseOffset.N,
@@ -74,6 +85,7 @@ enum TileState {
 	CAPTURE = 3,
 	CHECK = 4,
 	PIN = 5,
+	AlTAR = 6,
 }
 
 enum PieceType {
@@ -104,6 +116,22 @@ enum MoveType {
 	CASTLING = 7
 }
 
+enum ModeType {
+	CLASSIC = 0,
+	FOX = 1,
+	VOID = 2,
+	HELLHORSE = 3,
+	GAMBIT = 4,
+	SPY = 5,
+}
+
+enum CursorState {
+	IDLE = 0,
+	SELECT = 1,
+	HOLD = 2
+}
+
+var BOARD_SIZE: Vector2i = DEFAULT_BOARD_SIZE
 var squre_to_direction
 var symbol_to_type: Dictionary
 var move_to_symbol: Dictionary

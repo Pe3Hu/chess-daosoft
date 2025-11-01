@@ -10,19 +10,29 @@ visible = false
 theme_override_styles/panel = SubResource("StyleBoxEmpty_7wtg7")
 script = ExtResource("1_7wtg7")
 
-[node name="Clocks" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="TimeLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "time left:"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Clocks" type="VBoxContainer" parent="VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
 
-[node name="WhiteClock" parent="Clocks" node_paths=PackedStringArray("referee") instance=ExtResource("2_wkvbo")]
+[node name="WhiteClock" parent="VBoxContainer/Clocks" node_paths=PackedStringArray("referee") instance=ExtResource("2_wkvbo")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-referee = NodePath("../..")
+referee = NodePath("../../..")
 
-[node name="BlackClock" parent="Clocks" node_paths=PackedStringArray("referee") instance=ExtResource("2_wkvbo")]
+[node name="BlackClock" parent="VBoxContainer/Clocks" node_paths=PackedStringArray("referee") instance=ExtResource("2_wkvbo")]
 unique_name_in_owner = true
 layout_mode = 2
-referee = NodePath("../..")
+referee = NodePath("../../..")

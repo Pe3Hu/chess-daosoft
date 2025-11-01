@@ -18,6 +18,12 @@ var seconds: int = FrameworkSettings.CLOCK_START_SEC:
 		if seconds < 0:
 			seconds += 60
 			minutes -= 1
+var sacrifices: int = FrameworkSettings.SACRIFICE_COUNT_FOR_VICTORY:
+	set(value_):
+		sacrifices = value_
+		
+		if sacrifices == 0:
+			player.referee.winner_player = player
 
 
 func _init(player_: PlayerResource) -> void:
@@ -26,3 +32,5 @@ func _init(player_: PlayerResource) -> void:
 func reset() -> void:
 	minutes = FrameworkSettings.CLOCK_START_MIN
 	seconds = FrameworkSettings.CLOCK_START_SEC
+	sacrifices = FrameworkSettings.SACRIFICE_COUNT_FOR_VICTORY
+	
