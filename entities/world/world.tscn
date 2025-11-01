@@ -8,10 +8,12 @@
 script = ExtResource("1_sbgiu")
 
 [node name="Game" parent="." node_paths=PackedStringArray("cursor") instance=ExtResource("2_tytc4")]
+offset_left = -360.0
+offset_right = 360.0
 cursor = NodePath("../CanvasLayer/CustomCursor")
 
 [node name="Camera2D" type="Camera2D" parent="Game"]
-position = Vector2(289, 131)
+position = Vector2(365, 140)
 zoom = Vector2(2, 2)
 
 [node name="FPS" type="Label" parent="."]

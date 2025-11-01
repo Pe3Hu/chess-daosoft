@@ -41,6 +41,8 @@ func get_type() -> String:
 			return "rook"
 		FrameworkSettings.PieceType.QUEEN:
 			return "queen"
+		FrameworkSettings.PieceType.HELLHORSE:
+			return "hellhorse"
 	
 	return ""
 	
@@ -62,7 +64,7 @@ func geterate_moves() -> void:
 	if template.type == FrameworkSettings.PieceType.PAWN:
 		geterate_pawn_moves()
 		return
-	if template.type == FrameworkSettings.PieceType.KNIGHT:
+	if template.type == FrameworkSettings.PieceType.KNIGHT or template.type == FrameworkSettings.PieceType.HELLHORSE:
 		geterate_knight_moves()
 		return
 	
@@ -110,7 +112,7 @@ func geterate_pawn_advance_moves() -> void:
 	
 	match template.color:
 		FrameworkSettings.PieceColor.WHITE:
-			if tile.coord.y == 6:
+			if tile.coord.y == FrameworkSettings.BOARD_SIZE.y - 2:
 				step_count = 2
 		FrameworkSettings.PieceColor.BLACK:
 			if tile.coord.y == 1:

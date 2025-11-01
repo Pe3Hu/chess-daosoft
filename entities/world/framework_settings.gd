@@ -22,8 +22,12 @@ const SACRIFICE_COUNT_FOR_VICTORY: int = 5
 #"8/8/RNBQKBNR/PPPPPPPP/pppppppp/rnbqkbnr/8/8" void
 #"8/8/RNBQKBNR/PPPP2PP/pppp2bp/rnbkq11r/8/8" check
 #"RNBQKQBNR/PPPPPPPPP/9/9/9/9/9/ppppppppp/rnbqkqbnr" gambit
+#"9/9/RNBQKQBNR/PPPB1BPPP/9/ppppppppp/rnbqkqbnr/9/9" gambit test
+#"RNBQKBHR/PPPPPPPP/8/8/7H/6p1/pppppppp/rnbqkbhr" hellhorse king capture and phantom
+#"RNBQKBHR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbhr" hellhorse start
 const START_FEN: String = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr"
-const START_GAMBIT_FEN: String = "9/9/RNBQKQBNR/PPPB1BPPP/9/ppppppppp/rnbqkqbnr/9/9"
+const START_GAMBIT_FEN: String = "RNBQKQBNR/PPPPPPPPP/9/9/9/9/9/ppppppppp/rnbqkqbnr"
+const START_HELLHORSE_FEN: String = "RNBQKBHR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbhr"
 
 const AXIS_X: Array[String] = ["a","b","c","d","e","f","g","h","i"]
 const AXIS_Y: Array[String] = ["1","2","3","4","5","6","7","8","9"]
@@ -95,7 +99,8 @@ enum PieceType {
 	KNIGHT = 3,     # 00011
 	BISHOP = 4,     # 00100
 	ROOK = 5,       # 00101
-	QUEEN = 6       # 00110
+	QUEEN = 6,      # 00110
+	HELLHORSE = 7   # 00111
 }
 
 enum PieceColor {
@@ -135,11 +140,15 @@ var BOARD_SIZE: Vector2i = DEFAULT_BOARD_SIZE
 var squre_to_direction
 var symbol_to_type: Dictionary
 var move_to_symbol: Dictionary
+var mod_to_fen: Dictionary
+var mod_to_board_size: Dictionary
 
 
 func _init() -> void:
 	init_symbol_to_type()
 	init_move_to_symbol()
+	init_mod_to_fen()
+	init_mod_to_board_size()
 	
 func init_symbol_to_type() -> void:
 	symbol_to_type["k"] = PieceType.KING#"king"
@@ -148,6 +157,7 @@ func init_symbol_to_type() -> void:
 	symbol_to_type["b"] = PieceType.BISHOP#""bishop"
 	symbol_to_type["r"] = PieceType.ROOK#""rook"
 	symbol_to_type["q"] = PieceType.QUEEN#""queen"
+	symbol_to_type["h"] = PieceType.HELLHORSE#""queen"
 	
 func init_move_to_symbol() -> void:
 	move_to_symbol[MoveType.FREE] = "-" 
@@ -158,6 +168,20 @@ func init_move_to_symbol() -> void:
 	move_to_symbol[MoveType.DRAW] = "=" 
 	move_to_symbol[MoveType.PROMOTION] = "=" 
 	move_to_symbol[MoveType.CASTLING] = "O-O" 
+	
+func init_mod_to_fen() -> void:
+	mod_to_fen[FrameworkSettings.ModeType.CLASSIC] = START_FEN
+	mod_to_fen[FrameworkSettings.ModeType.FOX] = START_FEN
+	mod_to_fen[FrameworkSettings.ModeType.VOID] = START_FEN
+	mod_to_fen[FrameworkSettings.ModeType.GAMBIT] = START_GAMBIT_FEN
+	mod_to_fen[FrameworkSettings.ModeType.HELLHORSE] = START_HELLHORSE_FEN
+	
+func init_mod_to_board_size() -> void:
+	mod_to_board_size[FrameworkSettings.ModeType.CLASSIC] = DEFAULT_BOARD_SIZE
+	mod_to_board_size[FrameworkSettings.ModeType.FOX] = DEFAULT_BOARD_SIZE
+	mod_to_board_size[FrameworkSettings.ModeType.VOID] = DEFAULT_BOARD_SIZE
+	mod_to_board_size[FrameworkSettings.ModeType.GAMBIT] = GAMBIT_BOARD_SIZE
+	mod_to_board_size[FrameworkSettings.ModeType.HELLHORSE] = DEFAULT_BOARD_SIZE
 	
 func check_is_tile_id_is_valid(tile_id_: int) -> bool:
 	return tile_id_ >= 0 and tile_id_ < BOARD_SIZE.x * BOARD_SIZE.y

@@ -1,8 +1,16 @@
-[gd_scene load_steps=4 format=3 uid="uid://bj5dpq71t7j4v"]
+[gd_scene load_steps=7 format=3 uid="uid://bj5dpq71t7j4v"]
 
 [ext_resource type="Script" uid="uid://d3iundk5xnug4" path="res://entities/board/board.gd" id="1_k7u3y"]
 [ext_resource type="PackedScene" uid="uid://cir12cpm1kaw2" path="res://entities/board/tile/tile.tscn" id="2_snp00"]
 [ext_resource type="PackedScene" uid="uid://sfu5ej4glwwj" path="res://entities/piece/piece.tscn" id="3_s8wxl"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k7u3y"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_snp00"]
+bg_color = Color(0.2051174, 0.20511746, 0.20511732, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s8wxl"]
+bg_color = Color(0.2231029, 0.2231029, 0.22310278, 1)
 
 [node name="Board" type="PanelContainer"]
 custom_minimum_size = Vector2(256, 256)
@@ -35,5 +43,65 @@ unique_name_in_owner = true
 [node name="Pieces" type="Node2D" parent="BoardMapLayer"]
 unique_name_in_owner = true
 
+[node name="HellHorsePassAsk" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_k7u3y")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HellHorsePassAsk"]
+layout_mode = 2
+alignment = 1
+
+[node name="HellHorseLabel" type="Label" parent="HellHorsePassAsk/VBoxContainer"]
+layout_mode = 2
+text = "pass second move?"
+
+[node name="Buttons" type="HBoxContainer" parent="HellHorsePassAsk/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="HellHorseYesButton" type="Button" parent="HellHorsePassAsk/VBoxContainer/Buttons"]
+layout_mode = 2
+text = "yes"
+
+[node name="HellHorseNoButton" type="Button" parent="HellHorsePassAsk/VBoxContainer/Buttons"]
+layout_mode = 2
+text = "no"
+
+[node name="FoxPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_snp00")
+
+[node name="FoxLabel" type="Label" parent="FoxPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+text = "select 2 pieces for swap"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CheckmatePanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(100, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_s8wxl")
+
+[node name="CheckmateLabel" type="Label" parent="CheckmatePanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+text = "checkmate!"
+
 [connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]
+[connection signal="pressed" from="HellHorsePassAsk/VBoxContainer/Buttons/HellHorseYesButton" to="." method="_on_hell_horse_yes_button_pressed"]
+[connection signal="pressed" from="HellHorsePassAsk/VBoxContainer/Buttons/HellHorseNoButton" to="." method="_on_hell_horse_no_button_pressed"]

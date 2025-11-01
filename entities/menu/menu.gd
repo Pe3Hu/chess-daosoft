@@ -6,7 +6,7 @@ extends PanelContainer
 
 @onready var mods: VBoxContainer = %Mods
 @onready var classic_button: CheckButton = %ClassicCheckButton
-@onready var hell_horse_button: CheckButton = %HellHorseCheckButton
+@onready var hellhorse_button: CheckButton = %HellHorseCheckButton
 @onready var void_button: CheckButton = %VoidCheckButton
 @onready var fox_button: CheckButton = %FoxCheckButton
 @onready var spy_button: CheckButton = %SpyCheckButton
@@ -24,16 +24,23 @@ extends PanelContainer
 @onready var auto_white_button: CheckButton = %AutoWhiteCheckButton
 @onready var auto_black_button: CheckButton = %AutoBlackCheckButton
 @onready var start_game_button: Button = %StartGameButton
+@onready var surrender_game_button: Button = %SurrenderGameButton
 
-@onready var fox_label: Label = %FoxLabel
-@onready var handbook: Handbook = %Handbook
 
 
 func _ready() -> void:
-	#active_button = classic_button
-	#game.resource.current_mod = FrameworkSettings.ModeType.CLASSIC
-	active_button = gambit_button
-	game.resource.current_mod = FrameworkSettings.ModeType.GAMBIT
+	active_button = classic_button
+	game.resource.current_mod = FrameworkSettings.ModeType.CLASSIC
+	
+	#active_button = gambit_button
+	#game.resource.current_mod = FrameworkSettings.ModeType.GAMBIT
+	
+	#active_button = fox_button
+	#game.resource.current_mod = FrameworkSettings.ModeType.FOX
+	
+	#active_button = hellhorse_button
+	#game.resource.current_mod = FrameworkSettings.ModeType.HELLHORSE
+	
 	active_button.button_pressed = true
 	
 func _on_classic_check_button_pressed() -> void:
@@ -41,9 +48,9 @@ func _on_classic_check_button_pressed() -> void:
 		active_button = classic_button
 		game.resource.current_mod = FrameworkSettings.ModeType.CLASSIC
 	
-func _on_hell_horse_check_button_pressed() -> void:
-	if hell_horse_button.button_pressed:
-		active_button = hell_horse_button
+func _on_hellhorse_check_button_pressed() -> void:
+	if hellhorse_button.button_pressed:
+		active_button = hellhorse_button
 		game.resource.current_mod = FrameworkSettings.ModeType.HELLHORSE
 	
 func _on_void_check_button_pressed() -> void:
@@ -89,13 +96,11 @@ func _on_auto_black_check_button_pressed() -> void:
 func _on_start_game_button_pressed() -> void:
 	game.start()
 	
+func _on_surrender_game_button_pressed() -> void:
+	surrender_game_button.visible = false
+	game.surrender()
+	
 func update_bots() -> void:
 	game.referee.resource.color_to_player[FrameworkSettings.PieceColor.WHITE].is_bot = auto_white_button.button_pressed
 	game.referee.resource.color_to_player[FrameworkSettings.PieceColor.BLACK].is_bot = auto_black_button.button_pressed
 	
-func fox_mod_display(is_on_: bool) -> void:
-	#option_buttons.visible = !is_on_
-	fox_label.visible = is_on_
-	handbook.pin.visible = !is_on_
-	handbook.capture.visible = !is_on_
-	handbook.check.visible = !is_on_

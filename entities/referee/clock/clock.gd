@@ -17,6 +17,7 @@ var resource: ClockResource:
 @onready var tick_timer: Timer = %TickTimer
 @onready var time_label: Label = %TimeLabel
 @onready var sacrifice_label: Label = %SacrificeLabel
+@onready var sacrifice_box: HBoxContainer = %Sacrifice
 
 
 func _on_tick_timer_timeout() -> void:

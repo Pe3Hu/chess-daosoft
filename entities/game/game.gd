@@ -12,8 +12,7 @@ var resource: GameResource = GameResource.new()
 @onready var referee = %Referee
 @onready var notation = %Notation
 @onready var menu = %Menu
-@onready var checkmate_panel = %CheckmatePanel
-@onready var checkmate_label = %CheckmateLabel
+@onready var handbook: Handbook = %Handbook
 
 var on_pause: bool = true
 
@@ -25,42 +24,53 @@ func _ready() -> void:
 	
 	board.initial_tile_state_update()
 	await get_tree().create_timer(0.05).timeout
-	start()
+	#start()
 	
 func start() -> void:
 	menu.mods.visible = false
 	menu.start_game_button.visible = false
-	menu.handbook.visible = true
+	menu.surrender_game_button.visible = true
+	handbook.visible = true
+	handbook.altar.visible = resource.current_mod == FrameworkSettings.ModeType.GAMBIT
 	board.visible = true
+	board.checkmate_panel.visible = false
 	notation.visible = true
+	
+	FrameworkSettings.BOARD_SIZE = FrameworkSettings.mod_to_board_size[resource.current_mod]
+	
+	if FrameworkSettings.BOARD_SIZE.x * FrameworkSettings.BOARD_SIZE.y != board.resource.tiles.size():
+		board.resize()
+	
+	if referee.resource.winner_player != null:
+		reset()
+	elif board.resource.start_fen != FrameworkSettings.mod_to_fen[resource.current_mod]:
+		reset()
+	else :
+		resource.before_first_move()
+		#board.resource.load_start_position()
+	
+	on_pause = true
 	
 	match resource.current_mod:
 		FrameworkSettings.ModeType.FOX:
 			referee.fox_mod_preparation()
-			menu.fox_mod_display(true)
+			handbook.fox_mod_display(true)
 			await fox_swap_pieces_finished
-			menu.fox_mod_display(false)
+			handbook.fox_mod_display(false)
 			await get_tree().create_timer(0.05).timeout
-		FrameworkSettings.ModeType.GAMBIT:
-			if FrameworkSettings.BOARD_SIZE != FrameworkSettings.GAMBIT_BOARD_SIZE:
-				FrameworkSettings.BOARD_SIZE = FrameworkSettings.GAMBIT_BOARD_SIZE
-				board.resize()
 	
 	on_pause = false
-	
 	referee.start_game()
 	menu.update_bots()
-	
-	if referee.resource.winner_player != null:
-		reset()
 	
 	if referee.resource.active_player.is_bot:
 		referee.apply_bot_move()
 	
 func end() -> void:
-	menu.handbook.visible = false
+	handbook.visible = false
 	menu.mods.visible = true
 	menu.start_game_button.visible = true
+	menu.surrender_game_button.visible = false
 	referee.visible = false
 	var notification_text = ""
 	
@@ -71,8 +81,8 @@ func end() -> void:
 			notification_text = "White"
 	
 	notification_text += " is winner"
-	checkmate_panel.visible = true
-	checkmate_label.text = notification_text
+	board.checkmate_panel.visible = true
+	board.checkmate_label.text = notification_text
 	
 	for clock in referee.clocks.get_children():
 		clock.tick_timer.stop()
@@ -82,3 +92,9 @@ func reset() -> void:
 	notation.reset()
 	board.reset()
 	menu.update_bots()
+	resource.before_first_move()
+	
+func surrender() -> void:
+	resource.referee.winner_player = resource.referee.active_player.opponent
+	handbook.surrender_reset()
+	end()

@@ -17,6 +17,8 @@ var pieces: Array[PieceResource]
 var captured_templates: Dictionary
 var altar_tile: TileResource
 
+var start_fen: String = ""
+
 
 var buttom_color: FrameworkSettings.PieceColor = FrameworkSettings.PieceColor.BLACK
 
@@ -26,7 +28,7 @@ func _init(game_: GameResource) -> void:
 	init_tiles()
 	#add_piece(FrameworkSettings.PieceColor.BLACK | FrameworkSettings.PieceType.BISHOP, 25)
 	#focus_tile = tiles[25]
-	load_position()
+	load_start_position()
 	
 func init_tiles() -> void:
 	for file in FrameworkSettings.BOARD_SIZE.y:
@@ -49,6 +51,7 @@ func add_tile(coord_: Vector2i) -> void:
 	tiles.append(tile)
 	
 func load_position_from_fen(fen_: String) -> void:
+	start_fen = fen_
 	var fen_board: String = fen_.split(' ')[0]
 	var file: int = 0
 	var rank: int = FrameworkSettings.BOARD_SIZE.x - 1
@@ -77,6 +80,8 @@ func add_piece(template_id_: int, tile_index_: int) -> void:
 	var player = game.referee.color_to_player[template.color]
 	var tile = tiles[tile_index_]
 	var piece = PieceResource.new(self, player, template, tile)
+	if template_id_ == 23:
+		pass
 	pieces.append(piece)
 	
 func update_tile_states() -> void:
@@ -139,25 +144,23 @@ func reset() -> void:
 		tile.reset()
 	
 	captured_templates = {}
-	load_position()
+	load_start_position()
 	
-func load_position() -> void:
-	match FrameworkSettings.BOARD_SIZE:
-		FrameworkSettings.DEFAULT_BOARD_SIZE: 
-			load_position_from_fen(FrameworkSettings.START_FEN)
-		FrameworkSettings.GAMBIT_BOARD_SIZE: 
+func load_start_position() -> void:
+	start_fen = FrameworkSettings.mod_to_fen[game.current_mod]
+	load_position_from_fen(start_fen)
+	
+	match game.current_mod:
+		FrameworkSettings.ModeType.GAMBIT:
 			altar_tile = get_tile_based_on_coord(FrameworkSettings.ALTAR_COORD)
 			altar_tile.current_state = FrameworkSettings.TileState.AlTAR
-			load_position_from_fen(FrameworkSettings.START_GAMBIT_FEN)
-	
 	
 func resize() -> void:
 	remove_tiles()
 	remove_pieces()
 	
 	init_tiles()
-	load_position()
-	
+	load_start_position()
 	
 	game.before_first_move()
 	

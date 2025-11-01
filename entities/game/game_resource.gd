@@ -13,8 +13,6 @@ func _init() -> void:
 	for player in referee.players:
 		player.board = board
 	
-	before_first_move()
-	
 	#var result = move_generation_test(2)
 	#print(result)
 	

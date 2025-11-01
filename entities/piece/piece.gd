@@ -10,12 +10,14 @@ var resource: PieceResource:
 		update_sprite()
 		position = Vector2(resource.tile.coord) * FrameworkSettings.TILE_SIZE
 
-@export_enum("pawn", "king", "queen", "rook", "bishop", "knight") var type = "pawn":
+@export_enum("pawn", "king", "queen", "rook", "bishop", "knight", "hellhorse") var type = "pawn":
 	set(value_):
 		type = value_
 		
 		if color != null:
 			texture = load("res://entities/piece/images/" + color + "_" + type + ".png")
+		if type == "hellhorse":
+			offset.y = 5
 @export_enum("black", "white") var color = "white":
 	set(value_):
 		color = value_
@@ -86,6 +88,8 @@ func place_on_tile(tile_: Tile) -> void:
 	if is_passing_initiative:
 		board.game.notation.add_move(move_resource)
 		board.game.referee.pass_initiative()
+	elif board.game.referee.resource.active_player.hellhorse_bonus_move:
+		board.show_hellhorse_pass_ask()
 	
 func capture(source_piece_: Piece = null) -> void:
 	if source_piece_ != null:
@@ -98,7 +102,7 @@ func capture(source_piece_: Piece = null) -> void:
 	remove_self()
 	
 func remove_self() -> void:
-	board.resource_to_piece.erase(resource)
+	#board.resource_to_piece.erase(resource)
 	board.pieces.remove_child(self)
 	queue_free()
 	
@@ -129,3 +133,4 @@ func sacrifice(move_resource_: MoveResource) -> void:
 			remove_self()
 			#var altar_tile = board.get_tile(board.resource.altar_tile)
 			#board.resource.altar_tile.piece = null
+	

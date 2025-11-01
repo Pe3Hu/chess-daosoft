@@ -24,7 +24,9 @@ layout_mode = 2
 text = "5:00"
 
 [node name="Sacrifice" type="HBoxContainer" parent="HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
+alignment = 1
 
 [node name="SacrificeTextureRect" type="TextureRect" parent="HBoxContainer/Sacrifice"]
 layout_mode = 2

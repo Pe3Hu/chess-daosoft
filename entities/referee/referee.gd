@@ -24,7 +24,7 @@ func init_clocks() -> void:
 	
 func start_game() -> void:
 	game.on_pause = false
-	game.checkmate_panel.visible = false
+	game.board.checkmate_panel.visible = false
 	visible = true
 	
 	%WhiteClock._on_switch()
@@ -67,15 +67,18 @@ func update_clocks() -> void:
 	for clock in clocks.get_children():
 		clock.update_time_label()
 		clock.update_sacrifice_label()
-	
+		clock.sacrifice_box.visible = game.resource.current_mod == FrameworkSettings.ModeType.GAMBIT
+		
 func reset() -> void:
 	resource.reset()
 	update_clocks()
 	
 func apply_mods() -> void:
 	apply_void_mod()
+	apply_hellhorse_mod()
 	
 func apply_void_mod() -> void:
+	if game.resource.current_mod != FrameworkSettings.ModeType.VOID: return
 	var escape_piece_resources = []
 	
 	for move_resource in resource.active_player.opponent.capture_moves:
@@ -86,6 +89,17 @@ func apply_void_mod() -> void:
 		if piece_resource.failure_on_escape_trial():
 			var piece = game.board.get_piece(piece_resource)
 			piece.capture()
+	
+func apply_hellhorse_mod() -> void:
+	if game.resource.current_mod != FrameworkSettings.ModeType.HELLHORSE: return
+	var last_move = game.notation.resource.moves.back()
+	if last_move.piece.template.type != FrameworkSettings.PieceType.HELLHORSE: return
+	if last_move.piece.player.hellhorse_bonus_move:
+		last_move.piece.player.hellhorse_bonus_move = false
+	else:
+		last_move.piece.player.hellhorse_bonus_move = true
+		last_move.piece.player.generate_legal_moves()
+		game.board.clear_phantom_hellhorse_captures()
 	
 func fox_mod_preparation() -> void:
 	resource.fox_swap_players.append_array(resource.players)

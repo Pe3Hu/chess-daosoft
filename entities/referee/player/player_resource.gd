@@ -27,6 +27,7 @@ var piece_to_assist: Dictionary
 
 var is_winner: bool = false
 var is_bot: bool = false
+var hellhorse_bonus_move: bool = false
 
 
 func _init(referee_: RefereeResource, color_: FrameworkSettings.PieceColor) -> void:
@@ -45,6 +46,12 @@ func generate_moves() -> Array:
 func generate_legal_moves() -> void:
 	if referee.game.board == null: return
 	legal_moves.clear()
+	
+	if board.game.current_mod == FrameworkSettings.ModeType.HELLHORSE:
+		generate_hellhorse_bonus_moves()
+		if hellhorse_bonus_move:
+			return
+	
 	piece_to_assist = {}
 	
 	generate_king_legal_moves()
@@ -52,14 +59,7 @@ func generate_legal_moves() -> void:
 	
 	for piece in pieces:
 		if piece != king_piece:
-			piece.geterate_moves()
-			var piece_legal_moves = piece.moves
-			
-			if !piece.pin_tiles.is_empty():
-				piece_legal_moves = piece_legal_moves.filter(func (a): return piece.pin_tiles.has(a.end_tile))
-			if !opponent.check_tiles.is_empty():
-				piece_legal_moves = piece_legal_moves.filter(func (a): return opponent.check_tiles.has(a.end_tile))
-			legal_moves.append_array(piece_legal_moves)
+			add_piece_legal_moves(piece)
 	
 func generate_king_legal_moves() -> void:
 	king_piece.geterate_moves()
@@ -232,6 +232,7 @@ func reset() -> void:
 	
 	is_winner = false
 	is_bot = false
+	hellhorse_bonus_move = false
 	
 func fill_fox_swap_pieces() -> void:
 	fox_swap_pieces = pieces.filter(func(a): return a.template.type != FrameworkSettings.PieceType.PAWN)
@@ -239,3 +240,26 @@ func fill_fox_swap_pieces() -> void:
 	for piece in fox_swap_pieces:
 		piece.tile.current_state = FrameworkSettings.TileState.NEXT
 	
+func generate_hellhorse_bonus_moves() -> void:
+	if !hellhorse_bonus_move: return
+	var last_move = board.game.notation.moves.back()
+	var piece = last_move.piece
+	if piece.template.type != FrameworkSettings.PieceType.HELLHORSE: return
+	piece.is_fresh = false
+	add_piece_legal_moves(piece)
+	
+	for move in legal_moves:
+		if move.captured_piece != null:
+			if move.captured_piece.template.type == FrameworkSettings.PieceType.KING:
+				legal_moves.erase(move)
+				return
+	
+func add_piece_legal_moves(piece_: PieceResource) -> void:
+	piece_.geterate_moves()
+	var piece_legal_moves = piece_.moves
+	
+	if !piece_.pin_tiles.is_empty():
+		piece_legal_moves = piece_legal_moves.filter(func (a): return piece_.pin_tiles.has(a.end_tile))
+	if !opponent.check_tiles.is_empty():
+		piece_legal_moves = piece_legal_moves.filter(func (a): return opponent.check_tiles.has(a.end_tile))
+	legal_moves.append_array(piece_legal_moves)

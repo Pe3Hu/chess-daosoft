@@ -18,6 +18,11 @@ var resource: BoardResource:
 @onready var tiles: Node2D = %Tiles
 @onready var pieces: Node2D = %Pieces
 
+@onready var hellhorse_pass_ask: PanelContainer = $HellHorsePassAsk
+@onready var fox_panel: PanelContainer = %FoxPanel
+@onready var checkmate_panel = %CheckmatePanel
+@onready var checkmate_label = %CheckmateLabel
+
 var resource_to_piece: Dictionary
 
 
@@ -59,6 +64,7 @@ func add_piece(piece_resource_: PieceResource) -> void:
 	
 func get_piece(piece_resource_: PieceResource) -> Variant:
 	if resource_to_piece.has(piece_resource_): return resource_to_piece[piece_resource_]
+	get_tree().quit()
 	return null
 	
 func hold_piece_on_tile(tile_: Tile) -> void:
@@ -164,6 +170,14 @@ func fox_mod_tile_state_update() -> void:
 			var tile = get_tile(piece.tile)
 			tile.update_state()
 	
+func set_fox_swap_tiles_as_none_state() -> void:
+	if game.referee.resource.fox_swap_players.is_empty(): return
+	var player = game.referee.resource.fox_swap_players.front()
+	for piece in player.fox_swap_pieces:
+		var tile = get_tile(piece.tile)
+		tile.resource.current_state = FrameworkSettings.TileState.NONE
+		tile.update_state()
+	
 func fox_swap(piece_for_swap_: Piece) -> void:
 	var focus_piece = get_piece(resource.focus_tile.piece)
 	var focus_tile = get_tile(resource.focus_tile)
@@ -213,6 +227,7 @@ func resize() -> void:
 	
 	init_tiles()
 	init_pieces()
+	reset()
 	
 func remove_tiles() -> void:
 	while tiles.get_child_count() > 0:
@@ -231,3 +246,24 @@ func _on_mouse_entered() -> void:
 	
 func _on_mouse_exited() -> void:
 	game.cursor.current_state = FrameworkSettings.CursorState.IDLE
+	
+func show_hellhorse_pass_ask() -> void:
+	hellhorse_pass_ask.visible = true
+	game.on_pause = true
+	
+func _on_hell_horse_yes_button_pressed() -> void:
+	game.referee.pass_initiative()
+	hellhorse_pass_ask.visible = false
+	game.on_pause = false
+	
+func _on_hell_horse_no_button_pressed() -> void:
+	hellhorse_pass_ask.visible = false
+	game.on_pause = false
+	
+func clear_phantom_hellhorse_captures() -> void:
+	var last_move = game.notation.resource.moves.back()
+	last_move.start_tile.current_state = FrameworkSettings.TileState.NONE
+	var start_tile = game.board.get_tile(last_move.start_tile)
+	start_tile.update_state()
+	var phantom_captures = last_move.piece.player.opponent.capture_moves.filter(func (a): return a.captured_piece == last_move.piece)
+	last_move.piece.player.opponent.capture_moves = last_move.piece.player.opponent.capture_moves.filter(func (a): !phantom_captures.has(a))

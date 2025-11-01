@@ -33,6 +33,7 @@ func add_player(piece_color_: FrameworkSettings.PieceColor) -> void:
 	color_to_player[piece_color_] = player
 	
 func pass_initiative() -> void:
+	if active_player.hellhorse_bonus_move: return
 	for player in players:
 		player.unfresh_all_pieces()
 	

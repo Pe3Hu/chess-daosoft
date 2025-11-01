@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="PieceTemplateResource" load_steps=2 format=3 uid="uid://bntjxyta8f4yj"]
+
+[ext_resource type="Script" uid="uid://b55cr24ikwmhf" path="res://entities/piece/templates/piece_template_resource.gd" id="1_koldc"]
+
+[resource]
+script = ExtResource("1_koldc")
+type = 7
+metadata/_custom_type_script = "uid://b55cr24ikwmhf"
