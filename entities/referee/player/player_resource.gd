@@ -28,6 +28,10 @@ var piece_to_assist: Dictionary
 var is_winner: bool = false
 var is_bot: bool = false
 var hellhorse_bonus_move: bool = false
+var spy_bonus_move: bool = false:
+	set(value_):
+		spy_bonus_move = value_
+var spy_move: MoveResource
 
 
 func _init(referee_: RefereeResource, color_: FrameworkSettings.PieceColor) -> void:
@@ -233,6 +237,8 @@ func reset() -> void:
 	is_winner = false
 	is_bot = false
 	hellhorse_bonus_move = false
+	spy_bonus_move = false
+	spy_move = null
 	
 func fill_fox_swap_pieces() -> void:
 	fox_swap_pieces = pieces.filter(func(a): return a.template.type != FrameworkSettings.PieceType.PAWN)

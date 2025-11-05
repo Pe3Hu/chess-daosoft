@@ -2,7 +2,6 @@ extends Node
 
 
 
-const DEFAULT_BOARD_SIZE: Vector2i = Vector2i(8, 8)
 const TILE_SIZE: Vector2 = Vector2(32, 32)
 const AXIS_OFFSET: Vector2 = Vector2(16, 16)
 
@@ -12,6 +11,7 @@ const CLOCK_START_SEC: int = 0
 const VOID_CHANCE_TO_STAND: float = 0.05
 const VOID_CHANCE_TO_ESCAPE: float = 0.05
 
+const DEFAULT_BOARD_SIZE: Vector2i = Vector2i(8, 8)
 const GAMBIT_BOARD_SIZE: Vector2i = Vector2i(9, 9)
 const ALTAR_COORD: Vector2i = Vector2i(4, 4)
 const SACRIFICE_COUNT_FOR_VICTORY: int = 5
@@ -25,9 +25,10 @@ const SACRIFICE_COUNT_FOR_VICTORY: int = 5
 #"9/9/RNBQKQBNR/PPPB1BPPP/9/ppppppppp/rnbqkqbnr/9/9" gambit test
 #"RNBQKBHR/PPPPPPPP/8/8/7H/6p1/pppppppp/rnbqkbhr" hellhorse king capture and phantom
 #"RNBQKBHR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbhr" hellhorse start
-const START_FEN: String = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr"
-const START_GAMBIT_FEN: String = "RNBQKQBNR/PPPPPPPPP/9/9/9/9/9/ppppppppp/rnbqkqbnr"
-const START_HELLHORSE_FEN: String = "RNBQKBHR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbhr"
+#"RNBQKBNR/PPPPPPPP/8/8/7k/6p1/pppppppp/rnbqkbnr" spy test
+const DEFAULT_START_FEN: String = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr"
+const GAMBIT_START_FEN: String = "RNBQKQBNR/PPPPPPPPP/9/9/9/9/9/ppppppppp/rnbqkqbnr"
+const HELLHORSE_START_FEN: String = "RNBQKBHR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbhr"
 
 const AXIS_X: Array[String] = ["a","b","c","d","e","f","g","h","i"]
 const AXIS_Y: Array[String] = ["1","2","3","4","5","6","7","8","9"]
@@ -118,7 +119,8 @@ enum MoveType {
 	CHECKMATE = 4,
 	DRAW = 5,
 	PROMOTION = 6,
-	CASTLING = 7
+	CASTLING = 7,
+	SPY = 8
 }
 
 enum ModeType {
@@ -142,6 +144,8 @@ var symbol_to_type: Dictionary
 var move_to_symbol: Dictionary
 var mod_to_fen: Dictionary
 var mod_to_board_size: Dictionary
+
+var start_mode: ModeType = ModeType.SPY
 
 
 func _init() -> void:
@@ -170,11 +174,12 @@ func init_move_to_symbol() -> void:
 	move_to_symbol[MoveType.CASTLING] = "O-O" 
 	
 func init_mod_to_fen() -> void:
-	mod_to_fen[FrameworkSettings.ModeType.CLASSIC] = START_FEN
-	mod_to_fen[FrameworkSettings.ModeType.FOX] = START_FEN
-	mod_to_fen[FrameworkSettings.ModeType.VOID] = START_FEN
-	mod_to_fen[FrameworkSettings.ModeType.GAMBIT] = START_GAMBIT_FEN
-	mod_to_fen[FrameworkSettings.ModeType.HELLHORSE] = START_HELLHORSE_FEN
+	mod_to_fen[FrameworkSettings.ModeType.CLASSIC] = DEFAULT_START_FEN
+	mod_to_fen[FrameworkSettings.ModeType.FOX] = DEFAULT_START_FEN
+	mod_to_fen[FrameworkSettings.ModeType.VOID] = DEFAULT_START_FEN
+	mod_to_fen[FrameworkSettings.ModeType.GAMBIT] = GAMBIT_START_FEN
+	mod_to_fen[FrameworkSettings.ModeType.HELLHORSE] = HELLHORSE_START_FEN
+	mod_to_fen[FrameworkSettings.ModeType.SPY] = DEFAULT_START_FEN
 	
 func init_mod_to_board_size() -> void:
 	mod_to_board_size[FrameworkSettings.ModeType.CLASSIC] = DEFAULT_BOARD_SIZE
@@ -182,6 +187,7 @@ func init_mod_to_board_size() -> void:
 	mod_to_board_size[FrameworkSettings.ModeType.VOID] = DEFAULT_BOARD_SIZE
 	mod_to_board_size[FrameworkSettings.ModeType.GAMBIT] = GAMBIT_BOARD_SIZE
 	mod_to_board_size[FrameworkSettings.ModeType.HELLHORSE] = DEFAULT_BOARD_SIZE
+	mod_to_board_size[FrameworkSettings.ModeType.SPY] = DEFAULT_BOARD_SIZE
 	
 func check_is_tile_id_is_valid(tile_id_: int) -> bool:
 	return tile_id_ >= 0 and tile_id_ < BOARD_SIZE.x * BOARD_SIZE.y
@@ -193,3 +199,9 @@ func check_is_tile_id_is_on_borad_edge(tile_id_: int) -> bool:
 	
 func check_is_tile_coord_is_valid(tile_coord_: Vector2i) -> bool:
 	return tile_coord_.x >= 0 and tile_coord_.y >= 0 and tile_coord_.x < BOARD_SIZE.x and tile_coord_.y < BOARD_SIZE.y
+	
+func get_windrose_offset(direcion_: Vector2i) -> Variant:
+	if !WINDROSE_DIRECTIONS.has(direcion_): return null
+	var index = WINDROSE_DIRECTIONS.find(direcion_)
+	return WINDROSE_OFFSETS[index]
+	

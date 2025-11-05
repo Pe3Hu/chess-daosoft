@@ -267,3 +267,9 @@ func clear_phantom_hellhorse_captures() -> void:
 	start_tile.update_state()
 	var phantom_captures = last_move.piece.player.opponent.capture_moves.filter(func (a): return a.captured_piece == last_move.piece)
 	last_move.piece.player.opponent.capture_moves = last_move.piece.player.opponent.capture_moves.filter(func (a): !phantom_captures.has(a))
+	
+func reset_tiles(tile_resources_: Array) -> void:
+	for tile_resource in tile_resources_:
+		var tile = get_tile(tile_resource)
+		tile.update_modulate(FrameworkSettings.TileState.NONE)
+	

@@ -44,6 +44,7 @@ func _process(_delta: float) -> void:
 		global_position = get_global_mouse_position()
 	
 func place_on_tile(tile_: Tile) -> void:
+	#if resource.player.spy_move != null: return
 	if resource.tile != null:
 		resource.tile.piece = null
 	
@@ -75,8 +76,33 @@ func place_on_tile(tile_: Tile) -> void:
 	
 	board.game.cursor.current_state = FrameworkSettings.CursorState.SELECT
 	is_holden = false
-	global_position = tile_.global_position
-	tile_.resource.place_piece(resource)
+	
+	var is_canceling_move: bool = false
+	
+	match board.game.resource.current_mod:
+		FrameworkSettings.ModeType.SPY:
+			var moves = board.game.notation.resource.moves
+			
+			if moves.size() > 1 and board.game.referee.resource.active_player.spy_move == null:
+				var second_last_move = moves[moves.size()-2]
+				#var a = board.game.referee.resource.active_player.color
+				#var b = second_last_move.piece.player.color
+				
+				if second_last_move.piece.player == board.game.referee.resource.active_player:
+					board.game.referee.resource.active_player.spy_move = move_resource
+					is_canceling_move = true
+	
+	if board.game.referee.resource.is_spy_action:
+		is_canceling_move = false
+	
+	if !is_canceling_move:
+		global_position = tile_.global_position
+		tile_.resource.place_piece(resource)
+	else:
+		var start_tile = board.get_tile(resource.tile)
+		global_position = start_tile.global_position
+	#else:
+	#	cancel_move(move_resource)
 	
 	#recalculation of moves after castling is completed
 	#if !is_not_castling_move:
@@ -86,12 +112,20 @@ func place_on_tile(tile_: Tile) -> void:
 	board.resource.focus_tile = null
 	
 	if is_passing_initiative:
-		board.game.notation.add_move(move_resource)
-		board.game.referee.pass_initiative()
+		if !is_canceling_move:
+			board.game.notation.add_move(move_resource)
+			
+			match board.game.resource.current_mod:
+				FrameworkSettings.ModeType.SPY:
+					board.game.referee.apply_opponent_spy_move()
+		
+		if !board.game.referee.resource.is_spy_action:
+			board.game.referee.pass_initiative()
 	elif board.game.referee.resource.active_player.hellhorse_bonus_move:
 		board.show_hellhorse_pass_ask()
 	
-func capture(source_piece_: Piece = null) -> void:
+func capture(source_piece_: Piece = null, is_admin_: bool = false) -> void:
+	if resource.player.spy_move == null and !is_admin_: return 
 	if source_piece_ != null:
 		if board.game.resource.current_mod == FrameworkSettings.ModeType.VOID:
 			if resource.success_on_stand_trial():
@@ -134,3 +168,11 @@ func sacrifice(move_resource_: MoveResource) -> void:
 			#var altar_tile = board.get_tile(board.resource.altar_tile)
 			#board.resource.altar_tile.piece = null
 	
+func cancel_move(move_resource_: MoveResource) -> void:
+	match board.game.resource.current_mod:
+		FrameworkSettings.ModeType.SPY:
+			resource.player.spy_move = move_resource_
+	
+	board.game.resource.notation.cancel_move(move_resource_)
+	var old_tile = board.get_tile(move_resource_.start_tile)
+	place_on_tile(old_tile)

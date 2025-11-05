@@ -11,6 +11,8 @@ var color_to_player: Dictionary
 var active_player: PlayerResource
 var winner_player: PlayerResource = null
 
+var is_spy_action: bool = false
+
 
 func _init(game_: GameResource) -> void:
 	game = game_
@@ -34,6 +36,8 @@ func add_player(piece_color_: FrameworkSettings.PieceColor) -> void:
 	
 func pass_initiative() -> void:
 	if active_player.hellhorse_bonus_move: return
+	if active_player.spy_bonus_move: return
+	#if is_spy_action: return
 	for player in players:
 		player.unfresh_all_pieces()
 	
@@ -49,3 +53,20 @@ func reset() -> void:
 	
 	active_player = players.front()
 	winner_player = null
+
+func get_tile_after_slide() -> TileResource:
+	var end_of_slide_tile = active_player.opponent.spy_move.end_tile
+	if !FrameworkSettings.SLIDE_PIECES.has(active_player.opponent.spy_move.piece.template.type): return end_of_slide_tile
+
+	var slide_direction = active_player.opponent.spy_move.end_tile.coord - active_player.opponent.spy_move.start_tile.coord
+	slide_direction = Vector2i(Vector2(slide_direction).normalized())
+	var windrose_offset = FrameworkSettings.get_windrose_offset(slide_direction)
+	
+	end_of_slide_tile =  active_player.opponent.spy_move.start_tile
+	
+	while active_player.opponent.spy_move.end_tile != end_of_slide_tile:
+		end_of_slide_tile = end_of_slide_tile.windrose_to_sequence[windrose_offset].front()
+		if end_of_slide_tile.piece != null:
+			return end_of_slide_tile
+	
+	return end_of_slide_tile

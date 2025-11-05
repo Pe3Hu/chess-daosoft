@@ -21,3 +21,6 @@ func record_move(move_: MoveResource) -> bool:
 	
 func reset() -> void:
 	moves.clear()
+	
+func cancel_move(move_: MoveResource) -> void:
+	moves.erase(move_)

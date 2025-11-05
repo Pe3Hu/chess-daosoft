@@ -24,7 +24,7 @@ func _ready() -> void:
 	
 	board.initial_tile_state_update()
 	await get_tree().create_timer(0.05).timeout
-	#start()
+	start()
 	
 func start() -> void:
 	menu.mods.visible = false

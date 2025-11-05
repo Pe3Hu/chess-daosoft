@@ -29,17 +29,21 @@ extends PanelContainer
 
 
 func _ready() -> void:
-	active_button = classic_button
-	game.resource.current_mod = FrameworkSettings.ModeType.CLASSIC
-	
-	#active_button = gambit_button
-	#game.resource.current_mod = FrameworkSettings.ModeType.GAMBIT
-	
-	#active_button = fox_button
-	#game.resource.current_mod = FrameworkSettings.ModeType.FOX
-	
-	#active_button = hellhorse_button
-	#game.resource.current_mod = FrameworkSettings.ModeType.HELLHORSE
+	game.resource.current_mod = FrameworkSettings.start_mode
+
+	match FrameworkSettings.start_mode:
+		FrameworkSettings.ModeType.CLASSIC:
+			active_button = classic_button
+		FrameworkSettings.ModeType.VOID:
+			active_button = void_button
+		FrameworkSettings.ModeType.GAMBIT:
+			active_button = gambit_button
+		FrameworkSettings.ModeType.FOX:
+			active_button = fox_button
+		FrameworkSettings.ModeType.HELLHORSE:
+			active_button = hellhorse_button
+		FrameworkSettings.ModeType.SPY:
+			active_button = spy_button
 	
 	active_button.button_pressed = true
 	

@@ -1,4 +1,15 @@
+res://entities/menu/menu.tscn
+res://entities/world/framework_settings.gd
+res://entities/menu/menu.gd
 res://entities/board/board.tscn
-res://entities/game/game.tscn
-res://entities/referee/referee.tscn
+res://entities/board/board.gd
 res://entities/game/game.gd
+res://entities/referee/player/player_resource.gd
+res://entities/referee/referee_resource.gd
+res://entities/notation/notation.tscn
+res://entities/notation/notation.gd
+res://entities/referee/referee.gd
+res://entities/piece/piece.gd
+res://entities/board/tile/tile.tscn
+res://entities/notation/notation_resource.gd
+res://entities/board/board_resource.gd

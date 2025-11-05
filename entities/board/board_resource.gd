@@ -4,6 +4,7 @@ extends Resource
 
 var game: GameResource
 var tiles: Array[TileResource]
+#var coord_to_tile: Dictionary
 var legal_tiles: Array[TileResource]
 var focus_tile: TileResource:
 	set(value_):
@@ -31,6 +32,7 @@ func _init(game_: GameResource) -> void:
 	load_start_position()
 	
 func init_tiles() -> void:
+	#coord_to_tile = {}
 	for file in FrameworkSettings.BOARD_SIZE.y:
 		for rank in FrameworkSettings.BOARD_SIZE.x:
 			var coord = Vector2i(rank, file)
@@ -49,6 +51,7 @@ func get_tile_based_on_coord(coord_: Vector2i) -> Variant:
 func add_tile(coord_: Vector2i) -> void:
 	var tile = TileResource.new(self, coord_)
 	tiles.append(tile)
+	#coord_to_tile[coord_] = tile
 	
 func load_position_from_fen(fen_: String) -> void:
 	start_fen = fen_

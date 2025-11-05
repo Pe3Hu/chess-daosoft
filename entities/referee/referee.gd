@@ -76,6 +76,7 @@ func reset() -> void:
 func apply_mods() -> void:
 	apply_void_mod()
 	apply_hellhorse_mod()
+	apply_spy_mod()
 	
 func apply_void_mod() -> void:
 	if game.resource.current_mod != FrameworkSettings.ModeType.VOID: return
@@ -101,6 +102,15 @@ func apply_hellhorse_mod() -> void:
 		last_move.piece.player.generate_legal_moves()
 		game.board.clear_phantom_hellhorse_captures()
 	
+func apply_spy_mod() -> void:
+	if game.resource.current_mod != FrameworkSettings.ModeType.SPY: return
+	if game.notation.resource.moves.size() < 2: return
+	
+	if resource.active_player.spy_bonus_move: 
+		resource.active_player.spy_bonus_move = false
+	else:
+		resource.active_player.spy_bonus_move = true
+	
 func fox_mod_preparation() -> void:
 	resource.fox_swap_players.append_array(resource.players)
 	
@@ -116,3 +126,36 @@ func get_player_clock(player_resource_: PlayerResource) -> Variant:
 			return clock
 	
 	return null
+	
+func apply_opponent_spy_move() -> void:
+	if resource.active_player.opponent.spy_move == null: return
+	var spy_piece_resource = resource.active_player.opponent.spy_move.piece
+	var spy_piece = game.board.get_piece(spy_piece_resource)
+	
+	var end_of_slide_tile_resource = resource.get_tile_after_slide()
+	resource.active_player.opponent.spy_move = null
+	
+	if end_of_slide_tile_resource.piece != null:
+		var captured_piece = game.board.get_piece(end_of_slide_tile_resource.piece)
+		
+		if spy_piece != captured_piece:
+			captured_piece.capture(spy_piece, true)
+	
+	var spy_tile = game.board.get_tile(end_of_slide_tile_resource)
+	resource.is_spy_action = true
+	spy_piece.place_on_tile(spy_tile)
+	resource.is_spy_action = false
+	
+	var tile_resource_on_reset = []
+	for capture_move in spy_piece_resource.player.capture_moves:
+		if !tile_resource_on_reset.has(capture_move.end_tile):
+			tile_resource_on_reset.append(capture_move.end_tile)
+	
+	game.board.reset_tiles(tile_resource_on_reset)
+	
+	spy_piece_resource.player.unfresh_all_pieces()
+	spy_piece_resource.player.find_threat_moves()
+	spy_piece_resource.player.opponent.unfresh_all_pieces()
+	spy_piece_resource.player.opponent.generate_legal_moves()
+	#game.board.reset_focus_tile()
+	#game.board.reset_tiles()
