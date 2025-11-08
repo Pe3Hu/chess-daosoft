@@ -7,7 +7,8 @@ var start_tile: TileResource
 var end_tile: TileResource
 var captured_piece: PieceResource
 var castling_rook: PieceResource
-var type: FrameworkSettings.MoveType = FrameworkSettings.MoveType.FREE
+var type: FrameworkSettings.MoveType = FrameworkSettings.MoveType.BASIC
+var initiative: FrameworkSettings.InitiativeType = FrameworkSettings.InitiativeType.BASIC
 
 
 func _init(piece_: PieceResource, start_tile_: TileResource, end_tile_: TileResource, captured_piece_: PieceResource = null, castling_rook_: PieceResource = null) -> void:

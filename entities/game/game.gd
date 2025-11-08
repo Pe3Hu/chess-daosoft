@@ -8,9 +8,9 @@ signal fox_swap_pieces_finished
 
 var resource: GameResource = GameResource.new()
 
-@onready var board = %Board
-@onready var referee = %Referee
-@onready var notation = %Notation
+@onready var board: Board = %Board
+@onready var referee: Referee = %Referee
+@onready var notation: Notation = %Notation
 @onready var menu = %Menu
 @onready var handbook: Handbook = %Handbook
 
@@ -31,27 +31,28 @@ func start() -> void:
 	menu.start_game_button.visible = false
 	menu.surrender_game_button.visible = true
 	handbook.visible = true
-	handbook.altar.visible = resource.current_mod == FrameworkSettings.ModeType.GAMBIT
+	handbook.altar.visible = FrameworkSettings.active_mode == FrameworkSettings.ModeType.GAMBIT
 	board.visible = true
 	board.checkmate_panel.visible = false
 	notation.visible = true
 	
-	FrameworkSettings.BOARD_SIZE = FrameworkSettings.mod_to_board_size[resource.current_mod]
+	FrameworkSettings.BOARD_SIZE = FrameworkSettings.mod_to_board_size[FrameworkSettings.active_mode]
 	
 	if FrameworkSettings.BOARD_SIZE.x * FrameworkSettings.BOARD_SIZE.y != board.resource.tiles.size():
 		board.resize()
 	
 	if referee.resource.winner_player != null:
 		reset()
-	elif board.resource.start_fen != FrameworkSettings.mod_to_fen[resource.current_mod]:
+	elif board.resource.start_fen != FrameworkSettings.mod_to_fen[FrameworkSettings.active_mode]:
 		reset()
 	else :
-		resource.before_first_move()
+		#resource.before_first_move()
+		recalc_piece_environment()
 		#board.resource.load_start_position()
 	
 	on_pause = true
 	
-	match resource.current_mod:
+	match FrameworkSettings.active_mode:
 		FrameworkSettings.ModeType.FOX:
 			referee.fox_mod_preparation()
 			handbook.fox_mod_display(true)
@@ -98,3 +99,8 @@ func surrender() -> void:
 	resource.referee.winner_player = resource.referee.active_player.opponent
 	handbook.surrender_reset()
 	end()
+	
+func recalc_piece_environment() -> void:
+	resource.recalc_piece_environment()
+	board.reset_focus_tile()
+	

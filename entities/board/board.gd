@@ -18,14 +18,31 @@ var resource: BoardResource:
 @onready var tiles: Node2D = %Tiles
 @onready var pieces: Node2D = %Pieces
 
-@onready var hellhorse_pass_ask: PanelContainer = $HellHorsePassAsk
+@onready var hellhorse_pass_ask: PanelContainer = %HellHorsePassAsk
 @onready var fox_panel: PanelContainer = %FoxPanel
 @onready var checkmate_panel = %CheckmatePanel
 @onready var checkmate_label = %CheckmateLabel
 
 var resource_to_piece: Dictionary
 
+var focus_tiles: Array[Tile]
+var legal_tiles: Array[Tile]
+var capture_tiles: Array[Tile]
+var check_tiles: Array[Tile]
+var pin_tiles: Array[Tile]
+var altar_tiles: Array[Tile]
 
+var state_tiles = [
+	focus_tiles,
+	legal_tiles,
+	capture_tiles,
+	check_tiles,
+	pin_tiles,
+	altar_tiles
+]
+
+
+#region init
 func _ready() -> void:
 	map_layer.position = FrameworkSettings.TILE_SIZE * 0.5
 	
@@ -67,75 +84,124 @@ func get_piece(piece_resource_: PieceResource) -> Variant:
 	get_tree().quit()
 	return null
 	
+#endregion
+
+#region hold
 func hold_piece_on_tile(tile_: Tile) -> void:
 	reset_focus_tile()
 	resource.focus_tile = tile_.resource
-	update_focus_tile()
+	set_tile_state(tile_, FrameworkSettings.TileState.FOCUS)
+	#update_focus_tile(tile_)
 	hold_piece()
-	
-func reset_focus_tile() -> void:
-	if game.resource.current_mod == FrameworkSettings.ModeType.FOX and game.on_pause: return
-	var previous_active_tile_resources = []
-	
-	if resource.focus_tile != null:
-		previous_active_tile_resources.append(resource.focus_tile)
-		previous_active_tile_resources.append_array(resource.legal_tiles)
-	
-	for tile_resource in previous_active_tile_resources:
-		var tile = tiles.get_child(tile_resource.id)
-		tile.update_modulate(FrameworkSettings.TileState.NONE)
-	
-	update_tile_threat_state()
-	
-	match game.resource.current_mod:
-		FrameworkSettings.ModeType.GAMBIT:
-			var altar_tile = get_tile(resource.altar_tile)
-			altar_tile.resource.current_state = FrameworkSettings.TileState.AlTAR
-			altar_tile.update_state()
-	
-func update_focus_tile() -> void:
-	if game.resource.current_mod == FrameworkSettings.ModeType.FOX and game.on_pause: return
-	var focust_tile = tiles.get_child(resource.focus_tile.id)
-	focust_tile.update_state()
-	
-	for tile_resource in resource.legal_tiles:
-		var tile = tiles.get_child(tile_resource.id)
-		tile.update_state()
 	
 func hold_piece() -> void:
 	var piece = get_piece(resource.focus_tile.piece)
 	piece.is_holden = true
 	game.cursor.current_state = FrameworkSettings.CursorState.HOLD
+#endregion
+
+#region tile state
+func set_tile_state(tile_: Tile, state_: FrameworkSettings.TileState) -> void:
+	tile_.set_state(state_)
+	
+	match state_:
+		FrameworkSettings.TileState.FOCUS:
+			focus_tiles.append(tile_)
+			update_focus_tile()
+		FrameworkSettings.TileState.LEGAL:
+			legal_tiles.append(tile_)
+		FrameworkSettings.TileState.CAPTURE:
+			capture_tiles.append(tile_)
+		FrameworkSettings.TileState.CHECK:
+			check_tiles.append(tile_)
+		FrameworkSettings.TileState.PIN:
+			pin_tiles.append(tile_)
+		FrameworkSettings.TileState.AlTAR:
+			altar_tiles.append(tile_)
+	
+func reset_tile_state(tile_: Tile) -> void:
+	tile_.set_state(FrameworkSettings.TileState.NONE)
+	
+	match tile_.resource.current_state:
+		FrameworkSettings.TileState.FOCUS:
+			focus_tiles.erase(tile_)
+		FrameworkSettings.TileState.LEGAL:
+			legal_tiles.erase(tile_)
+		FrameworkSettings.TileState.CAPTURE:
+			capture_tiles.erase(tile_)
+		FrameworkSettings.TileState.CHECK:
+			check_tiles.erase(tile_)
+		FrameworkSettings.TileState.PIN:
+			pin_tiles.erase(tile_)
+		FrameworkSettings.TileState.AlTAR:
+			altar_tiles.erase(tile_)
+	
+func reset_state_tiles() -> void:
+	for _state_tile in state_tiles:
+		while !_state_tile.is_empty():
+			var tile = _state_tile.pop_back()
+			reset_tile_state(tile)
+	
+func reset_focus_tile() -> void:
+	if FrameworkSettings.active_mode == FrameworkSettings.ModeType.FOX and game.on_pause: return
+	resource.focus_tile = null
+	#var previous_active_tile_resources = []
+	#
+	#if resource.focus_tile != null:
+		#previous_active_tile_resources.append(resource.focus_tile)
+		#previous_active_tile_resources.append_array(resource.legal_tiles)
+	#
+	#for tile_resource in previous_active_tile_resources:
+		#var tile = tiles.get_child(tile_resource.id)
+		#tile.update_modulate(FrameworkSettings.TileState.NONE)
+	reset_state_tiles()
+	fill_state_tiles()
+	
+	match FrameworkSettings.active_mode:
+		FrameworkSettings.ModeType.GAMBIT:
+			var altar_tile = get_tile(resource.altar_tile)
+			set_tile_state(altar_tile, FrameworkSettings.TileState.AlTAR)
+	
+func update_focus_tile() -> void:
+	if FrameworkSettings.active_mode == FrameworkSettings.ModeType.FOX and game.on_pause: return
+	#var focust_tile = tiles.get_child(resource.focus_tile.id)
+	#focust_tile.update_state()
+	
+	for tile_resource in resource.legal_tiles:
+		var tile = tiles.get_child(tile_resource.id)
+		set_tile_state(tile, FrameworkSettings.TileState.LEGAL)
 	
 func initial_tile_state_update() -> void:
-	update_tile_threat_state()
+	fill_state_tiles()
 	
-func update_tile_threat_state() -> void:
+func fill_state_tiles() -> void:
 	for move in resource.game.referee.active_player.opponent.capture_moves:
 		var tile = tiles.get_child(move.end_tile.id)
-		tile.update_modulate(FrameworkSettings.TileState.CAPTURE)
+		set_tile_state(tile, FrameworkSettings.TileState.CAPTURE)
 	
 	for move in resource.game.referee.active_player.opponent.pin_moves:
 		var tile = tiles.get_child(move.end_tile.id)
-		tile.update_modulate(FrameworkSettings.TileState.PIN)
+		set_tile_state(tile, FrameworkSettings.TileState.PIN)
 	
 	for tile_resource in resource.game.referee.active_player.opponent.check_tiles:
 		var tile = tiles.get_child(tile_resource.id)
-		tile.update_modulate(FrameworkSettings.TileState.CHECK)
+		set_tile_state(tile, FrameworkSettings.TileState.CHECK)
 	
-func reset_initiative_tile() -> void:
-	for move in resource.game.referee.active_player.opponent.capture_moves:
-		var tile = tiles.get_child(move.end_tile.id)
-		tile.update_modulate(FrameworkSettings.TileState.NONE)
+#func reset_initiative_tile() -> void:
+	#for move in resource.game.referee.active_player.opponent.capture_moves:
+		#var tile = tiles.get_child(move.end_tile.id)
+		#tile.update_modulate(FrameworkSettings.TileState.NONE)
+	#
+	#for move in resource.game.referee.active_player.opponent.pin_moves:
+		#var tile = tiles.get_child(move.end_tile.id)
+		#tile.update_modulate(FrameworkSettings.TileState.NONE)
+	#
+	#for tile_resource in resource.game.referee.active_player.opponent.check_tiles:
+		#var tile = tiles.get_child(tile_resource.id)
+		#tile.update_modulate(FrameworkSettings.TileState.NONE)
 	
-	for move in resource.game.referee.active_player.opponent.pin_moves:
-		var tile = tiles.get_child(move.end_tile.id)
-		tile.update_modulate(FrameworkSettings.TileState.NONE)
-	
-	for tile_resource in resource.game.referee.active_player.opponent.check_tiles:
-		var tile = tiles.get_child(tile_resource.id)
-		tile.update_modulate(FrameworkSettings.TileState.NONE)
-	
+#endregion
+
 func apply_move(move_resource_: MoveResource) -> void:
 	if move_resource_.captured_piece != null:
 		var captured_piece = get_piece(move_resource_.captured_piece)
@@ -145,6 +211,7 @@ func apply_move(move_resource_: MoveResource) -> void:
 	var tile = get_tile(move_resource_.end_tile)
 	piece.place_on_tile(tile)
 	
+#region reset
 func reset() -> void:
 	resource_to_piece = {}
 	resource.reset()
@@ -156,6 +223,37 @@ func reset() -> void:
 	initial_tile_state_update()
 	game.resource.before_first_move()
 	
+func resize() -> void:
+	custom_minimum_size = Vector2(FrameworkSettings.BOARD_SIZE) * FrameworkSettings.TILE_SIZE
+	resource.resize()
+	resource_to_piece = {}
+	
+	remove_tiles()
+	remove_pieces()
+	
+	init_tiles()
+	init_pieces()
+	reset()
+	
+func remove_tiles() -> void:
+	while tiles.get_child_count() > 0:
+		var tile = tiles.get_child(0)
+		tiles.remove_child(tile)
+		tile.queue_free()
+	
+func remove_pieces() -> void:
+	while pieces.get_child_count() > 0:
+		var piece = pieces.get_child(0)
+		pieces.remove_child(piece)
+		piece.queue_free()
+	
+func reset_tiles(tile_resources_: Array) -> void:
+	for tile_resource in tile_resources_:
+		var tile = get_tile(tile_resource)
+		tile.update_modulate(FrameworkSettings.TileState.NONE)
+#endregion
+	
+#region fox
 func fox_mod_tile_state_update() -> void:
 	if game.referee.resource.fox_swap_players.is_empty():
 		game.fox_swap_pieces_finished.emit()
@@ -217,36 +315,9 @@ func get_free_tile() -> Tile:
 	
 	return option_tile
 	
-func resize() -> void:
-	custom_minimum_size = Vector2(FrameworkSettings.BOARD_SIZE) * FrameworkSettings.TILE_SIZE
-	resource.resize()
-	resource_to_piece = {}
+#endregion
 	
-	remove_tiles()
-	remove_pieces()
-	
-	init_tiles()
-	init_pieces()
-	reset()
-	
-func remove_tiles() -> void:
-	while tiles.get_child_count() > 0:
-		var tile = tiles.get_child(0)
-		tiles.remove_child(tile)
-		tile.queue_free()
-	
-func remove_pieces() -> void:
-	while pieces.get_child_count() > 0:
-		var piece = pieces.get_child(0)
-		pieces.remove_child(piece)
-		piece.queue_free()
-	
-func _on_mouse_entered() -> void:
-	game.cursor.current_state = FrameworkSettings.CursorState.SELECT
-	
-func _on_mouse_exited() -> void:
-	game.cursor.current_state = FrameworkSettings.CursorState.IDLE
-	
+#region hellhorse
 func show_hellhorse_pass_ask() -> void:
 	hellhorse_pass_ask.visible = true
 	game.on_pause = true
@@ -268,8 +339,12 @@ func clear_phantom_hellhorse_captures() -> void:
 	var phantom_captures = last_move.piece.player.opponent.capture_moves.filter(func (a): return a.captured_piece == last_move.piece)
 	last_move.piece.player.opponent.capture_moves = last_move.piece.player.opponent.capture_moves.filter(func (a): !phantom_captures.has(a))
 	
-func reset_tiles(tile_resources_: Array) -> void:
-	for tile_resource in tile_resources_:
-		var tile = get_tile(tile_resource)
-		tile.update_modulate(FrameworkSettings.TileState.NONE)
+#endregion
+
+#region ui buttons
+func _on_mouse_entered() -> void:
+	game.cursor.current_state = FrameworkSettings.CursorState.SELECT
 	
+func _on_mouse_exited() -> void:
+	game.cursor.current_state = FrameworkSettings.CursorState.IDLE
+#endregion

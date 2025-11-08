@@ -20,17 +20,21 @@ var is_light: bool:
 			frame_coords.x = 0
 
 
-func update_state() -> void:
-	var state = resource.current_state
-	update_modulate(state)
+func set_state(state_: FrameworkSettings.TileState) -> void:
+	resource.current_state = state_
+	update_modulate(state_)
+
+#func update_state() -> void:
+	#var state = resource.current_state
+	#update_modulate(state)
 	
 func update_modulate(state_: FrameworkSettings.TileState) -> void:
 	match state_:
 		FrameworkSettings.TileState.NONE:
 			modulate = Color.WHITE
-		FrameworkSettings.TileState.CURRENT:
+		FrameworkSettings.TileState.FOCUS:
 			modulate = Color.DIM_GRAY
-		FrameworkSettings.TileState.NEXT:
+		FrameworkSettings.TileState.LEGAL:
 			modulate = Color.SEA_GREEN
 		FrameworkSettings.TileState.CAPTURE:
 			modulate = Color.BLUE_VIOLET
@@ -52,7 +56,7 @@ func _on_area_2d_input_event(_viewport: Node, _event: InputEvent, _shape_idx: in
 			if board.resource.focus_tile != null:
 				#put СhessPiece in its legal Tile
 				#if board.resource.focus_tile.piece.is_valid_tile(resource):
-				if resource.current_state == FrameworkSettings.TileState.CURRENT or resource.current_state == FrameworkSettings.TileState.NEXT:
+				if resource.current_state == FrameworkSettings.TileState.FOCUS or resource.current_state == FrameworkSettings.TileState.LEGAL:
 					var piece = board.get_piece(board.resource.focus_tile.piece)
 					piece.place_on_tile(self)
 				#return Piece to its original Tile if move is illegal
@@ -85,21 +89,19 @@ func _on_area_2d_input_event(_viewport: Node, _event: InputEvent, _shape_idx: in
 	
 func fox_piece_swap() -> void:
 	if !board.game.on_pause or board.game.resource.referee.winner_player != null: return
-	if !(resource.current_state == FrameworkSettings.TileState.CURRENT or resource.current_state == FrameworkSettings.TileState.NEXT): return
+	if !(resource.current_state == FrameworkSettings.TileState.FOCUS or resource.current_state == FrameworkSettings.TileState.LEGAL): return
 	
 	if board.resource.focus_tile == null:
 		match resource.current_state:
-			FrameworkSettings.TileState.NEXT:
+			FrameworkSettings.TileState.LEGAL:
 				board.hold_piece_on_tile(self)
-				resource.current_state = FrameworkSettings.TileState.CURRENT
-				update_state()
+				set_state(FrameworkSettings.TileState.FOCUS)
 	else:
 		var origin_piece = board.get_piece(resource.piece)
 		
 		match resource.current_state:
-			FrameworkSettings.TileState.CURRENT:
+			FrameworkSettings.TileState.FOCUS:
 				origin_piece.place_on_tile(self)
-				resource.current_state = FrameworkSettings.TileState.NEXT
-				update_state()
-			FrameworkSettings.TileState.NEXT:
+				set_state(FrameworkSettings.TileState.LEGAL)
+			FrameworkSettings.TileState.LEGAL:
 				board.fox_swap(origin_piece)

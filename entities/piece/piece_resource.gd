@@ -26,6 +26,7 @@ func _init(board_: BoardResource, player_: PlayerResource, template_: PieceTempl
 	
 	if template.type == FrameworkSettings.PieceType.KING:
 		player.king_piece = self
+	pass
 	
 func get_type() -> String:
 	match template.type:
@@ -55,7 +56,7 @@ func get_color() -> String:
 	
 	return ""
 	
-func geterate_moves() -> void:
+func generate_moves() -> void:
 	if is_fresh: return
 	is_fresh = true
 	moves.clear()
@@ -76,23 +77,23 @@ func geterate_moves() -> void:
 	
 func generate_king_castling_moves() -> void:
 	if !is_inactive: return
-	var castling_offset_indexs = [2, 6]
+	var castling_direction_indexs = [2, 6]
 	
-	for castling_offset_index in castling_offset_indexs:
-		var castling_windrose_offset = FrameworkSettings.WINDROSE_OFFSETS[castling_offset_index]
+	for castling_direction_index in castling_direction_indexs:
+		var castling_direction = FrameworkSettings.QUEEN_DIRECTIONS[castling_direction_index]
 		
-		if !tile.windrose_to_sequence[castling_windrose_offset].is_empty():
-			var last_tile_in_sequence = tile.windrose_to_sequence[castling_windrose_offset].back()
+		if !tile.direction_to_sequence[castling_direction].is_empty():
+			var last_tile_in_sequence = tile.direction_to_sequence[castling_direction].back()
 			
 			if last_tile_in_sequence.piece != null:
 				var castling_rook = last_tile_in_sequence.piece
 				
 				if castling_rook.is_inactive:
-					if tile.windrose_to_sequence[castling_windrose_offset].size() < 2: return
-					var target_tile = tile.windrose_to_sequence[castling_windrose_offset][1]
+					if tile.direction_to_sequence[castling_direction].size() < 2: return
+					var target_tile = tile.direction_to_sequence[castling_direction][1]
 					if target_tile.piece != null: return
-					var sequence_index = tile.windrose_to_sequence[castling_windrose_offset].size() - 3
-					var king_neighbor_tile = tile.windrose_to_sequence[castling_windrose_offset][sequence_index]
+					var sequence_index = tile.direction_to_sequence[castling_direction].size() - 3
+					var king_neighbor_tile = tile.direction_to_sequence[castling_direction][sequence_index]
 					if king_neighbor_tile.piece != null: return
 					
 					if !check_castling_under_threat(target_tile):
@@ -118,7 +119,7 @@ func geterate_pawn_advance_moves() -> void:
 			if tile.coord.y == 1:
 				step_count = 2
 	
-	var direction = FrameworkSettings.WINDROSE_DIRECTIONS[direction_index]
+	var direction = FrameworkSettings.QUEEN_DIRECTIONS[direction_index]
 	
 	for _i in step_count:
 		var coord = tile.coord + direction * (_i + 1)
@@ -138,7 +139,7 @@ func geterate_pawn_capture_moves() -> void:
 			direction_indexs = [3, 5]
 	
 	for direction_index in direction_indexs:
-		var direction = FrameworkSettings.WINDROSE_DIRECTIONS[direction_index]
+		var direction = FrameworkSettings.QUEEN_DIRECTIONS[direction_index]
 		var coord = tile.coord + direction
 		var target_tile = board.get_tile_based_on_coord(coord)
 	
@@ -169,7 +170,7 @@ func geterate_pawn_passant_capture_move() -> void:
 	
 	for _i in passant_direction_indexs.size():
 		var passant_direction_index = passant_direction_indexs[_i]
-		var passant_direction = FrameworkSettings.WINDROSE_DIRECTIONS[passant_direction_index]
+		var passant_direction = FrameworkSettings.QUEEN_DIRECTIONS[passant_direction_index]
 		var passant_coord = tile.coord + passant_direction
 		var passant_tile = board.get_tile_based_on_coord(passant_coord)
 		
@@ -179,14 +180,14 @@ func geterate_pawn_passant_capture_move() -> void:
 		if passant_tile.piece != last_move.piece: continue
 		if passant_tile.piece.template.color == template.color: continue
 		var capture_direction_index = capture_direction_indexs[_i]
-		var capture_direction = FrameworkSettings.WINDROSE_DIRECTIONS[capture_direction_index]
+		var capture_direction = FrameworkSettings.QUEEN_DIRECTIONS[capture_direction_index]
 		var capture_coord = tile.coord + capture_direction
 		var capture_tile = board.get_tile_based_on_coord(capture_coord)
 		add_move(capture_tile, passant_tile.piece)
 		return
 	
 func geterate_knight_moves() -> void:
-	for direction in FrameworkSettings.KNIGHT_MOVES:
+	for direction in FrameworkSettings.KNIGHT_DIRECTIONS:
 		var coord = tile.coord + direction
 		var target_tile = board.get_tile_based_on_coord(coord)
 		
@@ -202,21 +203,21 @@ func geterate_knight_moves() -> void:
 	update_assists()
 	
 func geterate_sliding_moves() -> void:
-	var start_offset_index: int = 0
-	var end_offset_index: int = FrameworkSettings.WINDROSE_OFFSETS.size()
-	var offset_index_step: int = 1
+	var start_direction_index: int = 0
+	var end_direction_index: int = FrameworkSettings.QUEEN_DIRECTIONS.size()
+	var direction_index_step: int = 1
 	
-	if template.type == FrameworkSettings.PieceType.BISHOP:
-		start_offset_index = 1
-		offset_index_step = 2
+	match template.type:
+		FrameworkSettings.PieceType.BISHOP:
+			start_direction_index = 1
+			direction_index_step = 2
+		FrameworkSettings.PieceType.ROOK:
+			direction_index_step = 2
 	
-	if template.type == FrameworkSettings.PieceType.ROOK:
-		offset_index_step = 2
-	
-	for offset_index in range(start_offset_index, end_offset_index, offset_index_step):
-		var windrose_offset = FrameworkSettings.WINDROSE_OFFSETS[offset_index]
+	for offset_index in range(start_direction_index, end_direction_index, direction_index_step):
+		var direction = FrameworkSettings.QUEEN_DIRECTIONS[offset_index]
 		
-		for tile_in_sequence in tile.windrose_to_sequence[windrose_offset]:
+		for tile_in_sequence in tile.direction_to_sequence[direction]:
 			if tile_in_sequence.piece == null:
 				add_move(tile_in_sequence)
 				
@@ -264,7 +265,7 @@ func get_move(target_tile_: TileResource) -> Variant:
 	return null
 	
 func geterate_legal_moves() -> Array:
-	geterate_moves()
+	generate_moves()
 	var legal_moves = moves.filter(func(a): return player.is_legal_move(a))
 	return legal_moves
 	
@@ -283,7 +284,7 @@ func check_castling_under_threat(target_tile_: TileResource) -> bool:
 	return false
 	
 func get_capture_moves() -> Array:
-	geterate_moves()
+	generate_moves()
 	var capture_moves = moves.filter(func(a): return a.type == FrameworkSettings.MoveType.CAPTURE or a.type == FrameworkSettings.MoveType.PASSANT)
 	return capture_moves
 	
@@ -335,3 +336,11 @@ func failure_on_escape_trial() -> bool:
 	if template.type == FrameworkSettings.PieceType.KING: return false
 	var chance = randf()
 	return chance < FrameworkSettings.VOID_CHANCE_TO_ESCAPE
+	
+func consequence_of_placement() -> void:
+	if player != board.game.referee.active_player: return
+	player.initiative_index += 1
+	board.game.recalc_piece_environment()
+	
+	if player.initiatives.size() == player.initiative_index:
+		player.reset_initiatives()

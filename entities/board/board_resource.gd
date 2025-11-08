@@ -42,7 +42,7 @@ func init_tiles() -> void:
 		tile.find_all_sequences()
 	
 func get_tile_based_on_coord(coord_: Vector2i) -> Variant:
-	if FrameworkSettings.check_is_tile_coord_is_valid(coord_):
+	if BoardHelper.is_valid_coord(coord_):
 		var id = coord_.y * FrameworkSettings.BOARD_SIZE.x + coord_.x
 		return tiles[id]
 	
@@ -79,20 +79,18 @@ func load_position_from_fen(fen_: String) -> void:
 				file += 1
 	
 func add_piece(template_id_: int, tile_index_: int) -> void:
-	var template = load("res://entities/piece/templates/" + str(template_id_) + ".tres")
+	var template = load("res://entities/piece/templates/{id}.tres".format({"id": template_id_}))
 	var player = game.referee.color_to_player[template.color]
 	var tile = tiles[tile_index_]
 	var piece = PieceResource.new(self, player, template, tile)
-	if template_id_ == 23:
-		pass
 	pieces.append(piece)
 	
 func update_tile_states() -> void:
-	focus_tile.current_state = FrameworkSettings.TileState.CURRENT
+	focus_tile.current_state = FrameworkSettings.TileState.FOCUS
 	var legal_moves = focus_tile.piece.geterate_legal_moves()
 	
 	for move in legal_moves:
-		move.end_tile.current_state = FrameworkSettings.TileState.NEXT
+		move.end_tile.current_state = FrameworkSettings.TileState.LEGAL
 		legal_tiles.append(move.end_tile)
 	
 func reset_tile_states() -> void:
@@ -150,10 +148,10 @@ func reset() -> void:
 	load_start_position()
 	
 func load_start_position() -> void:
-	start_fen = FrameworkSettings.mod_to_fen[game.current_mod]
+	start_fen = FrameworkSettings.mod_to_fen[FrameworkSettings.active_mode]
 	load_position_from_fen(start_fen)
 	
-	match game.current_mod:
+	match FrameworkSettings.active_mode:
 		FrameworkSettings.ModeType.GAMBIT:
 			altar_tile = get_tile_based_on_coord(FrameworkSettings.ALTAR_COORD)
 			altar_tile.current_state = FrameworkSettings.TileState.AlTAR

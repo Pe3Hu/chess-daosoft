@@ -1,8 +1,9 @@
-PanelContainer
-Label
 HBoxContainer
-Button
+Label
 VBoxContainer
+MarginContainer
+PanelContainer
+Button
 TextureRect
 Sprite2D
 ColorRect
@@ -11,4 +12,3 @@ CheckButton      - Matches the "toggle" keyword.
 Timer
 RichTextLabel
 Node
-CollisionShape2D

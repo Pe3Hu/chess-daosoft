@@ -12,6 +12,7 @@ var resource: RefereeResource:
 @onready var clocks = %Clocks
 
 
+#region clock
 func init_clocks() -> void:
 	for player_resource in resource.players:
 		match player_resource.color:
@@ -22,16 +23,29 @@ func init_clocks() -> void:
 	
 	update_clocks()
 	
+func update_clocks() -> void:
+	for clock in clocks.get_children():
+		clock.update_time_label()
+		clock.update_sacrifice_label()
+		clock.sacrifice_box.visible = FrameworkSettings.active_mode == FrameworkSettings.ModeType.GAMBIT
+		
+func get_player_clock(player_resource_: PlayerResource) -> Variant:
+	for clock in clocks.get_children():
+		if clock.resource == player_resource_.clock:
+			return clock
+	
+	return null
+#endregion
+	
 func start_game() -> void:
 	game.on_pause = false
 	game.board.checkmate_panel.visible = false
 	visible = true
-	
 	%WhiteClock._on_switch()
 	
 func pass_initiative() -> void:
-	game.board.reset_initiative_tile()
-	apply_mods()
+	#game.board.reset_state_tiles()
+	#apply_mods()
 	resource.pass_initiative()
 	
 	if !check_gameover():
@@ -63,23 +77,18 @@ func apply_bot_move() -> void:
 	var random_move = resource.active_player.legal_moves.pick_random()
 	game.board.apply_move(random_move)
 	
-func update_clocks() -> void:
-	for clock in clocks.get_children():
-		clock.update_time_label()
-		clock.update_sacrifice_label()
-		clock.sacrifice_box.visible = game.resource.current_mod == FrameworkSettings.ModeType.GAMBIT
-		
 func reset() -> void:
 	resource.reset()
 	update_clocks()
 	
+#region mod
 func apply_mods() -> void:
 	apply_void_mod()
 	apply_hellhorse_mod()
 	apply_spy_mod()
 	
 func apply_void_mod() -> void:
-	if game.resource.current_mod != FrameworkSettings.ModeType.VOID: return
+	if FrameworkSettings.active_mode != FrameworkSettings.ModeType.VOID: return
 	var escape_piece_resources = []
 	
 	for move_resource in resource.active_player.opponent.capture_moves:
@@ -92,24 +101,32 @@ func apply_void_mod() -> void:
 			piece.capture()
 	
 func apply_hellhorse_mod() -> void:
-	if game.resource.current_mod != FrameworkSettings.ModeType.HELLHORSE: return
+	if FrameworkSettings.active_mode != FrameworkSettings.ModeType.HELLHORSE: return
 	var last_move = game.notation.resource.moves.back()
 	if last_move.piece.template.type != FrameworkSettings.PieceType.HELLHORSE: return
-	if last_move.piece.player.hellhorse_bonus_move:
-		last_move.piece.player.hellhorse_bonus_move = false
-	else:
-		last_move.piece.player.hellhorse_bonus_move = true
-		last_move.piece.player.generate_legal_moves()
-		game.board.clear_phantom_hellhorse_captures()
+	
+	var initiative = last_move.piece.player.get_initiative()
+	
+	match initiative:
+		FrameworkSettings.InitiativeType.BASIC:
+			last_move.piece.player.initiatives.push_back(FrameworkSettings.InitiativeType.HELLHORSE)
+		
+			last_move.piece.player.generate_legal_moves()
+			game.board.clear_phantom_hellhorse_captures()
+		FrameworkSettings.InitiativeType.HELLHORSE:
+			pass
 	
 func apply_spy_mod() -> void:
-	if game.resource.current_mod != FrameworkSettings.ModeType.SPY: return
-	if game.notation.resource.moves.size() < 2: return
+	if FrameworkSettings.active_mode != FrameworkSettings.ModeType.SPY: return
+	#if game.notation.resource.moves.size() < 2: return
 	
-	if resource.active_player.spy_bonus_move: 
-		resource.active_player.spy_bonus_move = false
-	else:
-		resource.active_player.spy_bonus_move = true
+	#var initiative = resource.active_player.get_initiative()
+	#match initiative:
+		#FrameworkSettings.InitiativeType.BASIC:
+			#resource.active_player.generate_legal_moves()
+			#game.board.reset_state_tiles()
+		#FrameworkSettings.InitiativeType.SPY:
+			#pass
 	
 func fox_mod_preparation() -> void:
 	resource.fox_swap_players.append_array(resource.players)
@@ -120,18 +137,12 @@ func fox_mod_preparation() -> void:
 	game.menu.update_bots()
 	game.board.fox_mod_tile_state_update()
 	
-func get_player_clock(player_resource_: PlayerResource) -> Variant:
-	for clock in clocks.get_children():
-		if clock.resource == player_resource_.clock:
-			return clock
-	
-	return null
-	
 func apply_opponent_spy_move() -> void:
 	if resource.active_player.opponent.spy_move == null: return
 	var spy_piece_resource = resource.active_player.opponent.spy_move.piece
 	var spy_piece = game.board.get_piece(spy_piece_resource)
-	
+	var is_capturing = resource.active_player.opponent.spy_move.captured_piece != null
+	var castling_rook = resource.active_player.opponent.spy_move.castling_rook
 	var end_of_slide_tile_resource = resource.get_tile_after_slide()
 	resource.active_player.opponent.spy_move = null
 	
@@ -142,9 +153,19 @@ func apply_opponent_spy_move() -> void:
 			captured_piece.capture(spy_piece, true)
 	
 	var spy_tile = game.board.get_tile(end_of_slide_tile_resource)
-	resource.is_spy_action = true
-	spy_piece.place_on_tile(spy_tile)
-	resource.is_spy_action = false
+	
+	if is_capturing:
+		if spy_tile.resource.piece != null and spy_piece.template.type == FrameworkSettings.PieceType.PAWN:
+			spy_piece.place_on_tile(spy_tile)
+	else:
+		spy_piece.place_on_tile(spy_tile)
+	
+	if castling_rook != null:
+		spy_piece.complement_castling_move(castling_rook)
+	
+	#resource.is_spy_action = true
+	#spy_piece.place_on_tile(spy_tile)
+	#resource.is_spy_action = false
 	
 	var tile_resource_on_reset = []
 	for capture_move in spy_piece_resource.player.capture_moves:
@@ -153,9 +174,11 @@ func apply_opponent_spy_move() -> void:
 	
 	game.board.reset_tiles(tile_resource_on_reset)
 	
-	spy_piece_resource.player.unfresh_all_pieces()
-	spy_piece_resource.player.find_threat_moves()
-	spy_piece_resource.player.opponent.unfresh_all_pieces()
-	spy_piece_resource.player.opponent.generate_legal_moves()
+	game.recalc_piece_environment()
+	#spy_piece_resource.player.unfresh_all_pieces()
+	#spy_piece_resource.player.find_threat_moves()
+	#spy_piece_resource.player.opponent.unfresh_all_pieces()
+	#spy_piece_resource.player.opponent.generate_legal_moves()
 	#game.board.reset_focus_tile()
 	#game.board.reset_tiles()
+#endregion

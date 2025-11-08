@@ -13,7 +13,7 @@ var coord: Vector2i
 var id: int
 var current_state: FrameworkSettings.TileState = FrameworkSettings.TileState.NONE
 
-var windrose_to_sequence: Dictionary
+var direction_to_sequence: Dictionary
 
 
 func _init(board_: BoardResource, coord_: Vector2i) -> void:
@@ -22,20 +22,18 @@ func _init(board_: BoardResource, coord_: Vector2i) -> void:
 	id = FrameworkSettings.BOARD_SIZE.x * coord_.y + coord_.x
 	
 func find_all_sequences() -> void:
-	for _i in FrameworkSettings.WINDROSE_OFFSETS.size():
-		var windrose_offset = FrameworkSettings.WINDROSE_OFFSETS[_i]
-		var windrose_dirction = FrameworkSettings.WINDROSE_DIRECTIONS[_i]
-		windrose_to_sequence[windrose_offset] = []
+	for direction in FrameworkSettings.QUEEN_DIRECTIONS:
+		direction_to_sequence[direction] = []
 		var neighbour_coord = Vector2i(coord)
 		var is_sequence_end = false
 		
 		while !is_sequence_end:
-			neighbour_coord += windrose_dirction
-			is_sequence_end = !FrameworkSettings.check_is_tile_coord_is_valid(neighbour_coord)
+			neighbour_coord += direction
+			is_sequence_end = !BoardHelper.is_valid_coord(neighbour_coord)
 			
 			if !is_sequence_end:
 				var next_tile = board.get_tile_based_on_coord(neighbour_coord)
-				windrose_to_sequence[windrose_offset].append(next_tile)
+				direction_to_sequence[direction].append(next_tile)
 	
 func check_tile_on_same_axis(tile_: TileResource) -> bool:
 	return coord.x == tile_.coord.x or coord.y == tile_.coord.y

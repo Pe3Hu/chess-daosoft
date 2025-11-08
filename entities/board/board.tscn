@@ -13,7 +13,7 @@ bg_color = Color(0.2051174, 0.20511746, 0.20511732, 1)
 bg_color = Color(0.2231029, 0.2231029, 0.22310278, 1)
 
 [node name="Board" type="PanelContainer"]
-custom_minimum_size = Vector2(256, 256)
+custom_minimum_size = Vector2(320, 320)
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -32,45 +32,52 @@ script = ExtResource("1_k7u3y")
 tile_scene = ExtResource("2_snp00")
 piece_scene = ExtResource("3_s8wxl")
 
-[node name="BoardMapLayer" type="TileMapLayer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="."]
+custom_minimum_size = Vector2(256, 256)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="BoardMapLayer" type="TileMapLayer" parent="MarginContainer"]
 unique_name_in_owner = true
 
-[node name="Sprite2D" type="Sprite2D" parent="BoardMapLayer"]
+[node name="Sprite2D" type="Sprite2D" parent="MarginContainer/BoardMapLayer"]
 
-[node name="Tiles" type="Node2D" parent="BoardMapLayer"]
+[node name="Tiles" type="Node2D" parent="MarginContainer/BoardMapLayer"]
 unique_name_in_owner = true
 
-[node name="Pieces" type="Node2D" parent="BoardMapLayer"]
+[node name="Pieces" type="Node2D" parent="MarginContainer/BoardMapLayer"]
 unique_name_in_owner = true
 
-[node name="HellHorsePassAsk" type="PanelContainer" parent="."]
+[node name="HellHorsePassAsk" type="PanelContainer" parent="MarginContainer"]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_k7u3y")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HellHorsePassAsk"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HellHorsePassAsk"]
 layout_mode = 2
 alignment = 1
 
-[node name="HellHorseLabel" type="Label" parent="HellHorsePassAsk/VBoxContainer"]
+[node name="HellHorseLabel" type="Label" parent="MarginContainer/HellHorsePassAsk/VBoxContainer"]
 layout_mode = 2
 text = "pass second move?"
 
-[node name="Buttons" type="HBoxContainer" parent="HellHorsePassAsk/VBoxContainer"]
+[node name="Buttons" type="HBoxContainer" parent="MarginContainer/HellHorsePassAsk/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="HellHorseYesButton" type="Button" parent="HellHorsePassAsk/VBoxContainer/Buttons"]
+[node name="HellHorseYesButton" type="Button" parent="MarginContainer/HellHorsePassAsk/VBoxContainer/Buttons"]
 layout_mode = 2
 text = "yes"
 
-[node name="HellHorseNoButton" type="Button" parent="HellHorsePassAsk/VBoxContainer/Buttons"]
+[node name="HellHorseNoButton" type="Button" parent="MarginContainer/HellHorsePassAsk/VBoxContainer/Buttons"]
 layout_mode = 2
 text = "no"
 
-[node name="FoxPanel" type="PanelContainer" parent="."]
+[node name="FoxPanel" type="PanelContainer" parent="MarginContainer"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -78,7 +85,7 @@ size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_snp00")
 
-[node name="FoxLabel" type="Label" parent="FoxPanel"]
+[node name="FoxLabel" type="Label" parent="MarginContainer/FoxPanel"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
@@ -86,7 +93,7 @@ text = "select 2 pieces for swap"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CheckmatePanel" type="PanelContainer" parent="."]
+[node name="CheckmatePanel" type="PanelContainer" parent="MarginContainer"]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(100, 50)
@@ -95,13 +102,154 @@ size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_s8wxl")
 
-[node name="CheckmateLabel" type="Label" parent="CheckmatePanel"]
+[node name="CheckmateLabel" type="Label" parent="MarginContainer/CheckmatePanel"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 text = "checkmate!"
 
+[node name="Digits" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+theme_override_constants/separation = 0
+
+[node name="Label8" type="Label" parent="Digits"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "8"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label7" type="Label" parent="Digits"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "7"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label6" type="Label" parent="Digits"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "6"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label5" type="Label" parent="Digits"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label4" type="Label" parent="Digits"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "4"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label3" type="Label" parent="Digits"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="Digits"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label1" type="Label" parent="Digits"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Letters" type="HBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+theme_override_constants/separation = 0
+
+[node name="Label1" type="Label" parent="Letters"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+text = "A	"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="Letters"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "B"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label3" type="Label" parent="Letters"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "C"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label4" type="Label" parent="Letters"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "D"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label5" type="Label" parent="Letters"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "E"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label6" type="Label" parent="Letters"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "F"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label7" type="Label" parent="Letters"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "G"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label8" type="Label" parent="Letters"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "H"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]
-[connection signal="pressed" from="HellHorsePassAsk/VBoxContainer/Buttons/HellHorseYesButton" to="." method="_on_hell_horse_yes_button_pressed"]
-[connection signal="pressed" from="HellHorsePassAsk/VBoxContainer/Buttons/HellHorseNoButton" to="." method="_on_hell_horse_no_button_pressed"]
+[connection signal="pressed" from="MarginContainer/HellHorsePassAsk/VBoxContainer/Buttons/HellHorseYesButton" to="." method="_on_hell_horse_yes_button_pressed"]
+[connection signal="pressed" from="MarginContainer/HellHorsePassAsk/VBoxContainer/Buttons/HellHorseNoButton" to="." method="_on_hell_horse_no_button_pressed"]

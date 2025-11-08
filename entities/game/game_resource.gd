@@ -6,7 +6,7 @@ var notation: NotationResource = NotationResource.new(self)
 var referee: RefereeResource = RefereeResource.new(self)
 var board: BoardResource = BoardResource.new(self)
 
-var current_mod: FrameworkSettings.ModeType = FrameworkSettings.ModeType.CLASSIC
+#var current_mod: FrameworkSettings.ModeType = FrameworkSettings.ModeType.CLASSIC
 
 
 func _init() -> void:
@@ -34,8 +34,9 @@ func move_generation_test(depth_: int) -> int:
 	
 	return count_positiions
 	
-func before_first_move() -> void:
-	var black_player = referee.color_to_player[FrameworkSettings.PieceColor.BLACK]
-	black_player.find_threat_moves()
-	var white_player = referee.color_to_player[FrameworkSettings.PieceColor.WHITE]
-	white_player.generate_legal_moves()
+func recalc_piece_environment() -> void:
+	for player in referee.players:
+		player.unfresh_all_pieces()
+	
+	referee.active_player.opponent.find_threat_moves()
+	referee.active_player.generate_legal_moves()

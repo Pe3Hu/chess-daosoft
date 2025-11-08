@@ -29,9 +29,9 @@ extends PanelContainer
 
 
 func _ready() -> void:
-	game.resource.current_mod = FrameworkSettings.start_mode
+	#game.resource.current_mod = FrameworkSettings.active_mode
 
-	match FrameworkSettings.start_mode:
+	match FrameworkSettings.active_mode:
 		FrameworkSettings.ModeType.CLASSIC:
 			active_button = classic_button
 		FrameworkSettings.ModeType.VOID:

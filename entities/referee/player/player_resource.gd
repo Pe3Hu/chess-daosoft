@@ -27,22 +27,31 @@ var piece_to_assist: Dictionary
 
 var is_winner: bool = false
 var is_bot: bool = false
-var hellhorse_bonus_move: bool = false
-var spy_bonus_move: bool = false:
+
+var initiatives: Array[FrameworkSettings.InitiativeType]
+var initiative_index: int = 0
+
+#var hellhorse_bonus_move: bool = false
+#var spy_bonus_move: bool = false:
+	#set(value_):
+		#spy_bonus_move = value_
+var spy_move: MoveResource:
 	set(value_):
-		spy_bonus_move = value_
-var spy_move: MoveResource
+		spy_move = value_
+		pass
 
 
 func _init(referee_: RefereeResource, color_: FrameworkSettings.PieceColor) -> void:
 	referee = referee_
 	color = color_ 
 	
+	reset_initiatives()
+	
 func generate_moves() -> Array:
 	var moves = []
 	
 	for piece in pieces:
-		piece.geterate_moves()
+		piece.generate_moves()
 		moves.append_array(piece.moves)
 	
 	return moves
@@ -51,10 +60,10 @@ func generate_legal_moves() -> void:
 	if referee.game.board == null: return
 	legal_moves.clear()
 	
-	if board.game.current_mod == FrameworkSettings.ModeType.HELLHORSE:
-		generate_hellhorse_bonus_moves()
-		if hellhorse_bonus_move:
-			return
+	match FrameworkSettings.active_mode:
+		FrameworkSettings.ModeType.HELLHORSE:
+			if is_not_last_initiative():
+				generate_hellhorse_bonus_moves()
 	
 	piece_to_assist = {}
 	
@@ -66,7 +75,7 @@ func generate_legal_moves() -> void:
 			add_piece_legal_moves(piece)
 	
 func generate_king_legal_moves() -> void:
-	king_piece.geterate_moves()
+	king_piece.generate_moves()
 	
 	var behind_check_tiles = []
 	for check_move in opponent.check_moves:
@@ -79,7 +88,7 @@ func generate_king_legal_moves() -> void:
 	king_legal_moves = king_legal_moves.filter(func (a): return !opponent.piece_to_assist.keys().has(a.captured_piece))
 	king_legal_moves = king_legal_moves.filter(func (a): return !behind_check_tiles.has(a.end_tile))
 	
-	match board.game.current_mod:
+	match FrameworkSettings.active_mode:
 		FrameworkSettings.ModeType.GAMBIT:
 			var altar_moves = king_piece.moves.filter(func (a): return a.end_tile == board.altar_tile)
 			legal_moves.append_array(altar_moves)
@@ -131,7 +140,7 @@ func find_threat_moves() -> void:
 	
 	for piece in pieces:
 		if !opponent.pin_pieces.has(piece):
-			piece.geterate_moves()
+			piece.generate_moves()
 			threat_moves.append_array(piece.moves)
 			
 			for move in piece.moves:
@@ -236,18 +245,21 @@ func reset() -> void:
 	
 	is_winner = false
 	is_bot = false
-	hellhorse_bonus_move = false
-	spy_bonus_move = false
+	#hellhorse_bonus_move = false
+	#spy_bonus_move = false
 	spy_move = null
+	
+	reset_initiatives()
 	
 func fill_fox_swap_pieces() -> void:
 	fox_swap_pieces = pieces.filter(func(a): return a.template.type != FrameworkSettings.PieceType.PAWN)
 	
 	for piece in fox_swap_pieces:
-		piece.tile.current_state = FrameworkSettings.TileState.NEXT
+		piece.tile.current_state = FrameworkSettings.TileState.LEGAL
 	
 func generate_hellhorse_bonus_moves() -> void:
-	if !hellhorse_bonus_move: return
+	#if get_initiative() != FrameworkSettings.InitiativeType.HELLHORSE: return
+	#if !hellhorse_bonus_move: return
 	var last_move = board.game.notation.moves.back()
 	var piece = last_move.piece
 	if piece.template.type != FrameworkSettings.PieceType.HELLHORSE: return
@@ -261,7 +273,7 @@ func generate_hellhorse_bonus_moves() -> void:
 				return
 	
 func add_piece_legal_moves(piece_: PieceResource) -> void:
-	piece_.geterate_moves()
+	piece_.generate_moves()
 	var piece_legal_moves = piece_.moves
 	
 	if !piece_.pin_tiles.is_empty():
@@ -269,3 +281,23 @@ func add_piece_legal_moves(piece_: PieceResource) -> void:
 	if !opponent.check_tiles.is_empty():
 		piece_legal_moves = piece_legal_moves.filter(func (a): return opponent.check_tiles.has(a.end_tile))
 	legal_moves.append_array(piece_legal_moves)
+	
+func reset_initiatives() -> void:
+	initiatives.clear()
+	initiatives.append_array(FrameworkSettings.mod_to_initiatives[FrameworkSettings.active_mode])
+	initiative_index = 0
+	
+	if referee.game.notation.moves.is_empty():
+		match FrameworkSettings.active_mode:
+			FrameworkSettings.ModeType.SPY:
+				if color == FrameworkSettings.PieceColor.WHITE:
+					initiatives.pop_back()
+	
+func get_initiative() -> FrameworkSettings.InitiativeType:
+	return initiatives[initiative_index]
+	
+func is_last_initiative() -> bool:
+	return initiatives.size() == initiative_index + 1#get_initiative() == FrameworkSettings.InitiativeType.BASIC 
+
+func is_not_last_initiative() -> bool:
+	return initiatives.size() > initiative_index + 1
