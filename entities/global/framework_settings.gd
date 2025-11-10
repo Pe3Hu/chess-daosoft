@@ -13,10 +13,10 @@ extends Node
 #"RNBQKBHR/PPPPPPPP/8/8/7H/6p1/pppppppp/rnbqkbhr" hellhorse king capture and phantom
 #"RNBQKBHR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbhr" hellhorse start
 #"RNBQKBNR/PPPPPPPP/8/8/Q6q/6p1/pppppppp/rnbqkbnr" spy test
-#"RNBQKBNR/PPPPPPPP/8/8/8/8/8/r3k2r" spy castling test
-const DEFAULT_START_FEN: String = "RNBQKBNR/PPPPPPPP/Q7/8/8/8/8/r3k2r"
+#"RNBQKBNR/PPPPPPPP/B7/1Q6/8/8/8/r3k2" spy castling test
+const DEFAULT_START_FEN: String = "RNBQKBNR/PPPPPPPP/B7/BQ6/p7/8/3ppp2/r3k2r"
 const GAMBIT_START_FEN: String = "RNBQKQBNR/PPPPPPPPP/9/9/9/9/9/ppppppppp/rnbqkqbnr"
-const HELLHORSE_START_FEN: String = "RNBQKBHR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbhr"
+const HELLHORSE_START_FEN: String = "RNBQKBHR/PPPPPPPP/8/8/7H/6p1/pppppppp/rnbqkhhr"
 #endregion
 
 #region board

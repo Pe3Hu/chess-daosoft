@@ -35,8 +35,11 @@ func move_generation_test(depth_: int) -> int:
 	return count_positiions
 	
 func recalc_piece_environment() -> void:
-	for player in referee.players:
-		player.unfresh_all_pieces()
+	#for player in referee.players:
+	#	player.unfresh_all_pieces()
 	
 	referee.active_player.opponent.find_threat_moves()
 	referee.active_player.generate_legal_moves()
+	
+func receive_move() -> void:
+	pass

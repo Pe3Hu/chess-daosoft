@@ -10,6 +10,8 @@ var castling_rook: PieceResource
 var type: FrameworkSettings.MoveType = FrameworkSettings.MoveType.BASIC
 var initiative: FrameworkSettings.InitiativeType = FrameworkSettings.InitiativeType.BASIC
 
+var is_postponed: bool = false
+
 
 func _init(piece_: PieceResource, start_tile_: TileResource, end_tile_: TileResource, captured_piece_: PieceResource = null, castling_rook_: PieceResource = null) -> void:
 	piece = piece_
@@ -48,3 +50,72 @@ func check_castling() -> void:
 	var l = max(x, y)#start_tile.coord.distance_squared_to(end_tile.coord)
 	if l > 1:
 		type = FrameworkSettings.MoveType.CASTLING
+	
+func get_tile_after_slide() -> TileResource:
+	#var end_of_slide_tile = active_player.opponent.spy_move.end_tile
+	var end_of_slide_tile = end_tile
+	#var active_player = piece.board.game.referee.active_player
+	#if !FrameworkSettings.SLIDE_PIECES.has(active_player.opponent.spy_move.piece.template.type): return end_of_slide_tile
+	if !FrameworkSettings.SLIDE_PIECES.has(piece.template.type): return end_of_slide_tile
+
+	#var direction = active_player.opponent.spy_move.end_tile.coord - active_player.opponent.spy_move.start_tile.coord
+	var direction = end_tile.coord - start_tile.coord
+	
+	direction = Vector2i(Vector2(direction).normalized())
+	
+	#end_of_slide_tile = active_player.opponent.spy_move.start_tile
+	end_of_slide_tile = start_tile
+	
+	#while active_player.opponent.spy_move.end_tile != end_of_slide_tile:
+	while end_tile != end_of_slide_tile:
+		end_of_slide_tile = end_of_slide_tile.direction_to_sequence[direction].front()
+		if end_of_slide_tile.piece != null:
+			return end_of_slide_tile
+	
+	return end_of_slide_tile
+	
+func check_slide_tiles_on_threat() -> bool:
+	#var end_of_slide_tile = active_player.opponent.spy_move.end_tile
+	var end_of_slide_tile = end_tile
+	#var active_player = piece.board.game.referee.active_player
+	#if !FrameworkSettings.SLIDE_PIECES.has(active_player.opponent.spy_move.piece.template.type): return end_of_slide_tile
+	if !FrameworkSettings.SLIDE_PIECES.has(piece.template.type): return end_of_slide_tile
+
+	#var direction = active_player.opponent.spy_move.end_tile.coord - active_player.opponent.spy_move.start_tile.coord
+	var direction = end_tile.coord - start_tile.coord
+	
+	direction = Vector2i(Vector2(direction).normalized())
+	
+	#end_of_slide_tile = active_player.opponent.spy_move.start_tile
+	end_of_slide_tile = start_tile
+	var all_threats = piece.player.opponent.threat_moves
+	var moved_tile_ids = []
+	var threat_tile_ids = []
+	
+	for move in all_threats:
+		if !threat_tile_ids.has(move.end_tile.id):
+			threat_tile_ids.append(move.end_tile.id)
+	
+	#while active_player.opponent.spy_move.end_tile != end_of_slide_tile:
+	while end_tile != end_of_slide_tile:
+		var threats = piece.player.opponent.threat_moves.filter(func (a): return a.end_tile == end_of_slide_tile)
+		if !threats.is_empty(): return false
+		end_of_slide_tile = end_of_slide_tile.direction_to_sequence[direction].front()
+		if end_of_slide_tile.piece != null:
+			return false
+		moved_tile_ids.append(end_of_slide_tile.id)
+	
+	var crossed_ids = moved_tile_ids.filter(func (a): return threat_tile_ids.has(a))
+	moved_tile_ids.sort()
+	threat_tile_ids.sort()
+	print(moved_tile_ids)
+	print(threat_tile_ids)
+	print(crossed_ids)
+	return true
+	
+func check_is_equal(move_: MoveResource) -> bool:
+	if move_.start_tile.id != start_tile.id: return false
+	if move_.end_tile.id != end_tile.id: return false
+	#if move_.piece.template.type != piece.template.type: return false
+	return true
+	

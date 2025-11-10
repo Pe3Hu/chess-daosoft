@@ -29,7 +29,7 @@ extends PanelContainer
 
 
 func _ready() -> void:
-	#game.resource.current_mod = FrameworkSettings.active_mode
+	#FrameworkSettings.active_mode = FrameworkSettings.active_mode
 
 	match FrameworkSettings.active_mode:
 		FrameworkSettings.ModeType.CLASSIC:
@@ -50,32 +50,32 @@ func _ready() -> void:
 func _on_classic_check_button_pressed() -> void:
 	if classic_button.button_pressed:
 		active_button = classic_button
-		game.resource.current_mod = FrameworkSettings.ModeType.CLASSIC
+		FrameworkSettings.active_mode = FrameworkSettings.ModeType.CLASSIC
 	
 func _on_hellhorse_check_button_pressed() -> void:
 	if hellhorse_button.button_pressed:
 		active_button = hellhorse_button
-		game.resource.current_mod = FrameworkSettings.ModeType.HELLHORSE
+		FrameworkSettings.active_mode = FrameworkSettings.ModeType.HELLHORSE
 	
 func _on_void_check_button_pressed() -> void:
 	if void_button.button_pressed:
 		active_button = void_button
-		game.resource.current_mod = FrameworkSettings.ModeType.VOID
+		FrameworkSettings.active_mode = FrameworkSettings.ModeType.VOID
 	
 func _on_gambit_check_button_pressed() -> void:
 	if gambit_button.button_pressed:
 		active_button = gambit_button
-		game.resource.current_mod = FrameworkSettings.ModeType.GAMBIT
+		FrameworkSettings.active_mode = FrameworkSettings.ModeType.GAMBIT
 	
 func _on_fox_check_button_pressed() -> void:
 	if fox_button.button_pressed:
 		active_button = fox_button
-		game.resource.current_mod = FrameworkSettings.ModeType.FOX
+		FrameworkSettings.active_mode = FrameworkSettings.ModeType.FOX
 	
 func _on_spy_check_button_pressed() -> void:
 	if spy_button.button_pressed:
 		active_button = spy_button
-		game.resource.current_mod = FrameworkSettings.ModeType.SPY
+		FrameworkSettings.active_mode = FrameworkSettings.ModeType.SPY
 
 func _on_auto_white_check_button_pressed() -> void:
 	if auto_black_button.button_pressed:

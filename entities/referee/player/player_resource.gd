@@ -47,6 +47,7 @@ func _init(referee_: RefereeResource, color_: FrameworkSettings.PieceColor) -> v
 	
 	reset_initiatives()
 	
+#region moves
 func generate_moves() -> Array:
 	var moves = []
 	
@@ -58,6 +59,7 @@ func generate_moves() -> Array:
 	
 func generate_legal_moves() -> void:
 	if referee.game.board == null: return
+	unfresh_all_pieces()
 	legal_moves.clear()
 	
 	match FrameworkSettings.active_mode:
@@ -79,7 +81,7 @@ func generate_king_legal_moves() -> void:
 	
 	var behind_check_tiles = []
 	for check_move in opponent.check_moves:
-		var check_direction = get_unit_vector(king_piece.tile.coord - check_move.start_tile.coord)
+		var check_direction = BoardHelper.get_unit_vector(king_piece.tile.coord - check_move.start_tile.coord)
 		var behind_check_coord = king_piece.tile.coord + check_direction
 		var behind_check_tile = board.get_tile_based_on_coord(behind_check_coord)
 		behind_check_tiles.append(behind_check_tile)
@@ -95,27 +97,15 @@ func generate_king_legal_moves() -> void:
 	
 	legal_moves.append_array(king_legal_moves)
 	
-func generate_legal_moves_old() -> void:
-	if referee.game.board == null: return
-	legal_moves.clear()
-	var pseudo_legal_moves = generate_moves()
+func add_piece_legal_moves(piece_: PieceResource) -> void:
+	piece_.generate_moves()
+	var piece_legal_moves = piece_.moves
 	
-	for pseudo_legal_move in pseudo_legal_moves:
-		referee.game.board.make_move(pseudo_legal_move)#, true)
-		
-		if !opponent.can_apply_checkmate():#opponent.generate_moves()):
-			legal_moves.append(pseudo_legal_move)
-		
-		referee.game.board.unmake_move(pseudo_legal_move)
-	
-func can_apply_checkmate() -> bool:#moves_: Array) -> bool:
-	var moves_ = generate_moves()
-	for move in moves_:#legal_moves:#moves_:
-		if move.captured_piece != null:
-			if move.captured_piece.template.type == FrameworkSettings.PieceType.KING:
-				return true
-	
-	return false
+	if !piece_.pin_tiles.is_empty():
+		piece_legal_moves = piece_legal_moves.filter(func (a): return piece_.pin_tiles.has(a.end_tile))
+	if !opponent.check_tiles.is_empty():
+		piece_legal_moves = piece_legal_moves.filter(func (a): return opponent.check_tiles.has(a.end_tile))
+	legal_moves.append_array(piece_legal_moves)
 	
 func is_legal_move(move_: MoveResource) -> bool:
 	for move in legal_moves:
@@ -133,6 +123,7 @@ func unfresh_all_pieces() -> void:
 		piece.is_fresh = false
 	
 func find_threat_moves() -> void:
+	unfresh_all_pieces()
 	threat_moves.clear()
 	threat_tiles.clear()
 	pawn_threat_tiles.clear()
@@ -177,14 +168,39 @@ func find_pin_moves() -> void:
 			capture_move.captured_piece.pin_source_piece = capture_move.piece
 			capture_move.piece.pin_target_piece = capture_move.captured_piece
 	
+	print([color, pin_pieces.size()])
+#endregion
+	
+func generate_legal_moves_old() -> void:
+	if referee.game.board == null: return
+	legal_moves.clear()
+	var pseudo_legal_moves = generate_moves()
+	
+	for pseudo_legal_move in pseudo_legal_moves:
+		referee.game.board.make_move(pseudo_legal_move)#, true)
+		
+		if !opponent.can_apply_checkmate():#opponent.generate_moves()):
+			legal_moves.append(pseudo_legal_move)
+		
+		referee.game.board.unmake_move(pseudo_legal_move)
+	
+func can_apply_checkmate() -> bool:#moves_: Array) -> bool:
+	var moves_ = generate_moves()
+	for move in moves_:#legal_moves:#moves_:
+		if move.captured_piece != null:
+			if move.captured_piece.template.type == FrameworkSettings.PieceType.KING:
+				return true
+	
+	return false
+	
 func is_king_behind_piece(capture_move_: MoveResource) -> Array:
 	if !FrameworkSettings.SLIDE_PIECES.has(capture_move_.piece.template.type): return []
 	if capture_move_.captured_piece == opponent.king_piece: return []
 	
 	var king_direction = opponent.king_piece.tile.coord - capture_move_.start_tile.coord
-	if !check_on_axis(king_direction): return []
-	var unit_king_direction = get_unit_vector(king_direction)
-	var unit_pin_direction = get_unit_vector(capture_move_.end_tile.coord - capture_move_.start_tile.coord)
+	if !BoardHelper.check_on_axis(king_direction): return []
+	var unit_king_direction = BoardHelper.get_unit_vector(king_direction)
+	var unit_pin_direction = BoardHelper.get_unit_vector(capture_move_.end_tile.coord - capture_move_.start_tile.coord)
 	if unit_king_direction != unit_pin_direction: return []
 	
 	var tile_on_way_to_king = capture_move_.start_tile
@@ -211,22 +227,13 @@ func find_check_tiles() -> void:
 		check_tiles.append(check_move.start_tile)
 		return
 	
-	var check_direction = get_unit_vector(check_move.end_tile.coord - check_move.start_tile.coord)
+	var check_direction = BoardHelper.get_unit_vector(check_move.end_tile.coord - check_move.start_tile.coord)
 	var tile_on_way_to_king = check_move.start_tile
 	
 	while tile_on_way_to_king != opponent.king_piece.tile:
 		check_tiles.append(tile_on_way_to_king)
 		var next_tile_coord = tile_on_way_to_king.coord + check_direction
 		tile_on_way_to_king = board.get_tile_based_on_coord(next_tile_coord)
-	
-func get_unit_vector(vec_: Vector2i) -> Vector2i:
-	var x = sign(vec_.x)
-	var y = sign(vec_.y)
-	return Vector2i(x, y)
-	
-func check_on_axis(vec_: Vector2i) -> bool:
-	if vec_.x == 0 or vec_.y == 0: return true
-	return abs(vec_.x) == abs(vec_.y)
 	
 func reset() -> void:
 	clock.reset()
@@ -251,6 +258,7 @@ func reset() -> void:
 	
 	reset_initiatives()
 	
+#region mods
 func fill_fox_swap_pieces() -> void:
 	fox_swap_pieces = pieces.filter(func(a): return a.template.type != FrameworkSettings.PieceType.PAWN)
 	
@@ -272,16 +280,9 @@ func generate_hellhorse_bonus_moves() -> void:
 				legal_moves.erase(move)
 				return
 	
-func add_piece_legal_moves(piece_: PieceResource) -> void:
-	piece_.generate_moves()
-	var piece_legal_moves = piece_.moves
+#endregion
 	
-	if !piece_.pin_tiles.is_empty():
-		piece_legal_moves = piece_legal_moves.filter(func (a): return piece_.pin_tiles.has(a.end_tile))
-	if !opponent.check_tiles.is_empty():
-		piece_legal_moves = piece_legal_moves.filter(func (a): return opponent.check_tiles.has(a.end_tile))
-	legal_moves.append_array(piece_legal_moves)
-	
+#region initiative
 func reset_initiatives() -> void:
 	initiatives.clear()
 	initiatives.append_array(FrameworkSettings.mod_to_initiatives[FrameworkSettings.active_mode])
@@ -301,3 +302,12 @@ func is_last_initiative() -> bool:
 
 func is_not_last_initiative() -> bool:
 	return initiatives.size() > initiative_index + 1
+	
+func update_initiative() -> void:
+#endregion
+	if self != board.game.referee.active_player: return
+	initiative_index += 1
+	board.game.recalc_piece_environment()
+	
+	if initiatives.size() == initiative_index:
+		reset_initiatives()

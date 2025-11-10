@@ -289,6 +289,10 @@ func get_capture_moves() -> Array:
 	return capture_moves
 	
 func unpin() -> void:
+	var a = [pin_source_piece, pin_target_piece]
+	
+	if pin_source_piece != null or pin_target_piece != null:
+		pass
 	if pin_source_piece == null and pin_target_piece == null: return
 	
 	if pin_source_piece != null:
@@ -308,6 +312,8 @@ func unpin_source_piece() -> void:
 func unpin_target_piece() -> void:
 	pin_target_piece.pin_source_piece = null
 	pin_target_piece = null
+	
+	player.pin_pieces.erase(self)
 	
 func update_assists() -> void:
 	for assist_piece in assist_pieces:
@@ -336,11 +342,3 @@ func failure_on_escape_trial() -> bool:
 	if template.type == FrameworkSettings.PieceType.KING: return false
 	var chance = randf()
 	return chance < FrameworkSettings.VOID_CHANCE_TO_ESCAPE
-	
-func consequence_of_placement() -> void:
-	if player != board.game.referee.active_player: return
-	player.initiative_index += 1
-	board.game.recalc_piece_environment()
-	
-	if player.initiatives.size() == player.initiative_index:
-		player.reset_initiatives()

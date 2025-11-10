@@ -1,8 +1,24 @@
-[gd_scene load_steps=3 format=3 uid="uid://btnc85ssqewc7"]
+[gd_scene load_steps=11 format=3 uid="uid://btnc85ssqewc7"]
 
 [ext_resource type="Script" uid="uid://b3oosn6dwhcr3" path="res://entities/menu/menu.gd" id="1_ab5ca"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_28b7d"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ab5ca"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vtc7f"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kk54r"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kskt3"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_aud0f"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_yttcm"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tjnt2"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3fnu5"]
 
 [node name="Menu" type="PanelContainer"]
 offset_right = 176.0
@@ -28,6 +44,7 @@ vertical_alignment = 1
 [node name="ClassicCheckButton" type="CheckButton" parent="VBoxContainer/Mods"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_ab5ca")
 disabled = true
 button_pressed = true
 keep_pressed_outside = true
@@ -36,27 +53,32 @@ text = "classic"
 [node name="VoidCheckButton" type="CheckButton" parent="VBoxContainer/Mods"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_vtc7f")
 text = "void"
 
 [node name="FoxCheckButton" type="CheckButton" parent="VBoxContainer/Mods"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_kk54r")
 text = "fox"
 
 [node name="GambitCheckButton" type="CheckButton" parent="VBoxContainer/Mods"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_kskt3")
 text = "gambit"
 
 [node name="HellHorseCheckButton" type="CheckButton" parent="VBoxContainer/Mods"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_aud0f")
 text = "hell horse
 "
 
 [node name="SpyCheckButton" type="CheckButton" parent="VBoxContainer/Mods"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_yttcm")
 text = "spy
 "
 
@@ -74,11 +96,13 @@ vertical_alignment = 1
 [node name="AutoWhiteCheckButton" type="CheckButton" parent="VBoxContainer/OptionButtons"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_tjnt2")
 text = "random white moves"
 
 [node name="AutoBlackCheckButton" type="CheckButton" parent="VBoxContainer/OptionButtons"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_styles/focus = SubResource("StyleBoxEmpty_3fnu5")
 text = "random black moves"
 
 [node name="StartGameButton" type="Button" parent="VBoxContainer/OptionButtons"]

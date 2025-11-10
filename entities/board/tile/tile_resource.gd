@@ -49,8 +49,9 @@ func place_piece(piece_: PieceResource) -> void:
 	piece_.tile = self
 	piece_.unpin()
 	
-	if pin_piece != null:
-		pin_piece.unpin()
+	if piece_.template.type == FrameworkSettings.PieceType.KING:
+		for pinned_piece in piece_.player.pin_pieces:
+			pinned_piece.unpin()
 	
 func reset() -> void:
 	piece = null

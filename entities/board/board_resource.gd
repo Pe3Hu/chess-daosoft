@@ -163,7 +163,7 @@ func resize() -> void:
 	init_tiles()
 	load_start_position()
 	
-	game.before_first_move()
+	game.recalc_piece_environment()
 	
 func remove_tiles() -> void:
 	tiles.clear()

@@ -137,10 +137,11 @@ func reset_tile_state(tile_: Tile) -> void:
 			altar_tiles.erase(tile_)
 	
 func reset_state_tiles() -> void:
-	for _state_tile in state_tiles:
-		while !_state_tile.is_empty():
-			var tile = _state_tile.pop_back()
-			reset_tile_state(tile)
+	for _state_tiles in state_tiles:
+		while !_state_tiles.is_empty():
+			var tile = _state_tiles.pop_back()
+			if tile != null:
+				reset_tile_state(tile)
 	
 func reset_focus_tile() -> void:
 	if FrameworkSettings.active_mode == FrameworkSettings.ModeType.FOX and game.on_pause: return
@@ -202,15 +203,6 @@ func fill_state_tiles() -> void:
 	
 #endregion
 
-func apply_move(move_resource_: MoveResource) -> void:
-	if move_resource_.captured_piece != null:
-		var captured_piece = get_piece(move_resource_.captured_piece)
-		captured_piece.capture()
-	
-	var piece = get_piece(move_resource_.piece)
-	var tile = get_tile(move_resource_.end_tile)
-	piece.place_on_tile(tile)
-	
 #region reset
 func reset() -> void:
 	resource_to_piece = {}
@@ -221,7 +213,7 @@ func reset() -> void:
 	
 	init_pieces()
 	initial_tile_state_update()
-	game.resource.before_first_move()
+	game.resource.recalc_piece_environment()
 	
 func resize() -> void:
 	custom_minimum_size = Vector2(FrameworkSettings.BOARD_SIZE) * FrameworkSettings.TILE_SIZE
@@ -252,7 +244,7 @@ func reset_tiles(tile_resources_: Array) -> void:
 		var tile = get_tile(tile_resource)
 		tile.update_modulate(FrameworkSettings.TileState.NONE)
 #endregion
-	
+
 #region fox
 func fox_mod_tile_state_update() -> void:
 	if game.referee.resource.fox_swap_players.is_empty():
@@ -316,14 +308,14 @@ func get_free_tile() -> Tile:
 	return option_tile
 	
 #endregion
-	
+
 #region hellhorse
 func show_hellhorse_pass_ask() -> void:
 	hellhorse_pass_ask.visible = true
 	game.on_pause = true
 	
 func _on_hell_horse_yes_button_pressed() -> void:
-	game.referee.pass_initiative()
+	game.referee.pass_turn_to_opponent()
 	hellhorse_pass_ask.visible = false
 	game.on_pause = false
 	
