@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://btnc85ssqewc7"]
+[gd_scene load_steps=13 format=3 uid="uid://btnc85ssqewc7"]
 
 [ext_resource type="Script" uid="uid://b3oosn6dwhcr3" path="res://entities/menu/menu.gd" id="1_ab5ca"]
 
@@ -19,6 +19,10 @@
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tjnt2"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3fnu5"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_puy48"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_425a5"]
 
 [node name="Menu" type="PanelContainer"]
 offset_right = 176.0
@@ -110,6 +114,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
+theme_override_styles/focus = SubResource("StyleBoxEmpty_puy48")
 text = "start new game"
 
 [node name="SurrenderGameButton" type="Button" parent="VBoxContainer/OptionButtons"]
@@ -118,6 +123,7 @@ visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
+theme_override_styles/focus = SubResource("StyleBoxEmpty_425a5")
 text = "surrender"
 
 [node name="FoxLabel" type="Label" parent="VBoxContainer"]

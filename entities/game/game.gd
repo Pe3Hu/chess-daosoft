@@ -17,6 +17,7 @@ var resource: GameResource = GameResource.new()
 var on_pause: bool = true
 
 
+#region basic
 func _ready() -> void:
 	board.resource = resource.board
 	referee.resource = resource.referee
@@ -99,47 +100,44 @@ func surrender() -> void:
 	resource.referee.winner_player = resource.referee.active_player.opponent
 	handbook.surrender_reset()
 	end()
-	
+#endregion
+
 func recalc_piece_environment() -> void:
 	resource.recalc_piece_environment()
 	board.reset_focus_tile()
 	
 func receive_move(move_resource_: MoveResource) -> void:
 	if move_resource_ == null: return
+	if move_resource_.type == FrameworkSettings.MoveType.FOX:
+		apply_fox_swap(move_resource_)
+		return
+	
 	var moved_piece = board.get_piece(move_resource_.piece)
-	if moved_piece.resource.is_inactive:
-		moved_piece.resource.is_inactive = false
-	#var is_passing_initiative = move_resource_ != null
 	var initiative = moved_piece.resource.player.get_initiative()
-
+	
 	if initiative == FrameworkSettings.InitiativeType.PLAN:
 		referee.resource.active_player.spy_move = move_resource_
 		move_resource_.is_postponed = true
-		#
-		##ignoring rook move after king castling
-		#is_passing_initiative = resource.notation.record_move(move_resource)
 	
+	if moved_piece.resource.is_inactive:
+		moved_piece.resource.is_inactive = move_resource_.is_postponed
+		
 	if move_resource_.captured_piece != null:
 		var captured_piece = board.get_piece(move_resource_.captured_piece)
 		
 		if !move_resource_.is_postponed:
 			captured_piece.capture(moved_piece)
-		
+	
 	match move_resource_.type:
 		FrameworkSettings.MoveType.PROMOTION:
-			move_resource_.pawn_promotion()
-			moved_piece.promotion()
+			if !move_resource_.is_postponed:
+				move_resource_.pawn_promotion()
+				moved_piece.promotion()
 		FrameworkSettings.MoveType.CASTLING:
 			moved_piece.complement_castling_move(move_resource_)
-		
+	
 	#check on Gambit Altar
 	moved_piece.sacrifice(move_resource_)
-	
-		#if move_resource.captured_piece != null:
-		#	uncaptured_piece()
-	
-	#if referee.resource.is_spy_action:
-		#is_canceling_move = false
 	
 	if move_resource_.is_postponed:
 		var move_start_tile = board.get_tile(move_resource_.start_tile)
@@ -149,57 +147,31 @@ func receive_move(move_resource_: MoveResource) -> void:
 		moved_piece.global_position = move_end_tile.global_position
 		move_end_tile.resource.place_piece(moved_piece.resource)
 		resource.notation.record_move(move_resource_)
-		
-	#else:
-	#	cancel_move(move_resource)
-	
-	#recalculation of moves after castling is completed
-	#if !is_not_castling_move:
-	#	resource.player.opponent.generate_legal_moves()
 	
 	consequence_of_piece_placement(moved_piece)
 	
-	#if move_resource_.is_postponed:
-		#match FrameworkSettings.active_mode:
-			#FrameworkSettings.ModeType.SPY:
-				#moved_piece.consequence_of_placement()
-	#else:
-		#if is_passing_initiative:
-			#notation.add_move(move_resource)
-			#consequence_of_placement()
-	
-	#if !referee.resource.is_spy_action:
-	
-func receive_move_old(move_resource_: MoveResource) -> void:
-	if move_resource_.captured_piece != null:
-		var captured_piece = board.get_piece(move_resource_.captured_piece)
-		captured_piece.capture()
-	
-	var piece = board.get_piece(move_resource_.piece)
-	var tile = board.get_tile(move_resource_.end_tile)
-	piece.place_on_tile(tile)
-	
 func consequence_of_piece_placement(piece_: Piece) -> void:
 	if piece_.resource.player != referee.resource.active_player: return
+	piece_.resource.king_unpin()
 	referee.apply_mods()
-	#if move_resource_.is_postponed:
-		
+	
 	var is_passing_turn = referee.resource.active_player.is_last_initiative()
 	var initiative = referee.resource.active_player.get_initiative()
-	var b = referee.resource.active_player.initiatives
-	var c = referee.resource.active_player.initiative_index
 	piece_.resource.player.update_initiative()
 	
 	if is_passing_turn:
 		referee.pass_turn_to_opponent()
 	else:
 		board.reset_focus_tile()
-	#else:
-		#resource.consequence_of_placement()
-		#board.reset_focus_tile()
 	
 	match FrameworkSettings.active_mode:
 		FrameworkSettings.ModeType.SPY:
 			if initiative == FrameworkSettings.InitiativeType.BASIC:
 				referee.apply_opponent_spy_move()
 	
+func apply_fox_swap(move_resource_: MoveResource) -> void:
+	var moved_piece = board.get_piece(move_resource_.start_tile.piece)
+	moved_piece.is_holden = false
+	var move_end_tile = board.get_tile(move_resource_.end_tile)
+	moved_piece.global_position = move_end_tile.global_position
+	move_end_tile.resource.place_piece(moved_piece.resource)

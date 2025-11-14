@@ -17,6 +17,7 @@ var is_inactive: bool = true
 var is_fresh: bool = false
 
 
+#region init
 func _init(board_: BoardResource, player_: PlayerResource, template_: PieceTemplateResource, tile_: TileResource) -> void:
 	board = board_
 	player = player_
@@ -55,7 +56,9 @@ func get_color() -> String:
 			return "black"
 	
 	return ""
-	
+#endregion
+
+#region moves
 func generate_moves() -> void:
 	if is_fresh: return
 	is_fresh = true
@@ -97,7 +100,7 @@ func generate_king_castling_moves() -> void:
 					if king_neighbor_tile.piece != null: return
 					
 					if !check_castling_under_threat(target_tile):
-						add_move(target_tile, null, castling_rook)
+						add_move(target_tile, null)
 	
 func geterate_pawn_moves() -> void:
 	geterate_pawn_advance_moves()
@@ -239,35 +242,25 @@ func geterate_sliding_moves() -> void:
 	
 	update_assists()
 	
-func add_move(target_tile_: TileResource, captured_piece_: PieceResource = null, castling_rook_: PieceResource = null) -> void:
+func add_move(target_tile_: TileResource, captured_piece_: PieceResource = null) -> void:
 	if captured_piece_ == null and target_tile_.piece != self:
 		captured_piece_ = target_tile_.piece
 	
-	var move = MoveResource.new(self, tile, target_tile_, captured_piece_, castling_rook_)
+	var move = MoveResource.new(self, tile, target_tile_, captured_piece_)
 	moves.append(move)
-	
+#endregion
+
+#region check
 func is_valid_tile(tile_: TileResource) -> bool:
 	for move in moves:
 		if move.end_tile == tile_:
 			if player.legal_moves.has(move):
 				return true
-	
+	#var a = player.legal_moves.filter(func (a): a.piece == self)
 	return false
 	
 func is_same_color(piece_resource_: PieceResource) -> bool:
 	return piece_resource_.template.color == template.color
-	
-func get_move(target_tile_: TileResource) -> Variant:
-	for move in moves:
-		if move.end_tile == target_tile_:
-			return move
-	
-	return null
-	
-func geterate_legal_moves() -> Array:
-	generate_moves()
-	var legal_moves = moves.filter(func(a): return player.is_legal_move(a))
-	return legal_moves
 	
 func check_castling_under_threat(target_tile_: TileResource) -> bool:
 	var threat_moves = player.opponent.generate_moves()
@@ -283,44 +276,70 @@ func check_castling_under_threat(target_tile_: TileResource) -> bool:
 	
 	return false
 	
+func success_on_stand_trial() -> bool:
+	if template.type == FrameworkSettings.PieceType.KING: return true
+	var chance = randf()
+	return chance < FrameworkSettings.VOID_CHANCE_TO_STAND
+	
+func failure_on_escape_trial() -> bool:
+	if template.type == FrameworkSettings.PieceType.KING: return false
+	var chance = randf()
+	return chance < FrameworkSettings.VOID_CHANCE_TO_ESCAPE
+
+#endregion
+
+#region get
+func get_move(target_tile_: TileResource) -> Variant:
+	for move in moves:
+		if move.end_tile == target_tile_:
+			return move
+	
+	return null
+	
+func geterate_legal_moves() -> Array:
+	generate_moves()
+	var legal_moves = moves.filter(func(a): return player.is_legal_move(a))
+	return legal_moves
+	
 func get_capture_moves() -> Array:
 	generate_moves()
 	var capture_moves = moves.filter(func(a): return a.type == FrameworkSettings.MoveType.CAPTURE or a.type == FrameworkSettings.MoveType.PASSANT)
 	return capture_moves
-	
+#endregion
+
+#region ping
 func unpin() -> void:
-	var a = [pin_source_piece, pin_target_piece]
-	
-	if pin_source_piece != null or pin_target_piece != null:
-		pass
 	if pin_source_piece == null and pin_target_piece == null: return
 	
 	if pin_source_piece != null:
 		unpin_source_piece()
+		pin_source_piece.unpin_target_piece()
+		pin_source_piece.pin_target_piece = null
+		pin_source_piece = null
 	if pin_target_piece != null:
 		unpin_target_piece()
+		pin_target_piece.unpin_source_piece()
+		pin_target_piece.pin_source_piece = null
+		pin_target_piece = null
 	
 func unpin_source_piece() -> void:
-	pin_source_piece.pin_target_piece = null
-	pin_source_piece = null
-	
 	for pin_tile in pin_tiles:
 		pin_tile.pin_piece = null
 	
 	pin_tiles.clear()
+	#if pin_source_piece == null: return
+	#
+	#pin_source_piece = null
+	#pin_source_piece.pin_target_piece.unpin_target_piece()
+	#pin_source_piece.pin_target_piece = null
 	
 func unpin_target_piece() -> void:
-	pin_target_piece.pin_source_piece = null
-	pin_target_piece = null
-	
 	player.pin_pieces.erase(self)
-	
-func update_assists() -> void:
-	for assist_piece in assist_pieces:
-		if !player.piece_to_assist.has(assist_piece):
-			player.piece_to_assist[assist_piece] = 0
-		
-		player.piece_to_assist[assist_piece] += 1
+	#if pin_target_piece == null: return
+	#
+	#pin_source_piece.pin_source_piece.unpin_source_piece()
+	#pin_target_piece = null
+	#pin_target_piece.pin_source_piece = null
 	
 func set_pin_tiles(pin_tiles_: Array) -> void:
 	for pin_tile in pin_tiles:
@@ -333,12 +352,16 @@ func set_pin_tiles(pin_tiles_: Array) -> void:
 		pin_tiles.append(pin_tile)
 		pin_tile.pin_piece = self
 	
-func success_on_stand_trial() -> bool:
-	if template.type == FrameworkSettings.PieceType.KING: return true
-	var chance = randf()
-	return chance < FrameworkSettings.VOID_CHANCE_TO_STAND
+func king_unpin() -> void:
+	if template.type != FrameworkSettings.PieceType.KING: return
+	player.unpin_all_pieces()
+	player.find_pin_moves()
+#endregion
+
+func update_assists() -> void:
+	for assist_piece in assist_pieces:
+		if !player.piece_to_assist.has(assist_piece):
+			player.piece_to_assist[assist_piece] = 0
+		
+		player.piece_to_assist[assist_piece] += 1
 	
-func failure_on_escape_trial() -> bool:
-	if template.type == FrameworkSettings.PieceType.KING: return false
-	var chance = randf()
-	return chance < FrameworkSettings.VOID_CHANCE_TO_ESCAPE

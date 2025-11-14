@@ -1,8 +1,8 @@
 HBoxContainer
-Label
-VBoxContainer
-MarginContainer
 PanelContainer
+VBoxContainer
+Label
+MarginContainer
 Button
 TextureRect
 Sprite2D

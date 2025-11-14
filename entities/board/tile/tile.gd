@@ -20,6 +20,7 @@ var is_light: bool:
 			frame_coords.x = 0
 
 
+#region state
 func set_state(state_: FrameworkSettings.TileState) -> void:
 	resource.current_state = state_
 	update_modulate(state_)
@@ -44,7 +45,8 @@ func update_modulate(state_: FrameworkSettings.TileState) -> void:
 			modulate = Color.ROYAL_BLUE
 		FrameworkSettings.TileState.AlTAR:
 			modulate = Color.BLACK
-	
+#endregion
+
 func _on_area_2d_input_event(_viewport: Node, _event: InputEvent, _shape_idx: int) -> void:
 	if _event.is_action_pressed("click"):
 		fox_piece_swap()

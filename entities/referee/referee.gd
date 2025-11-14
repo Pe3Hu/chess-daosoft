@@ -73,9 +73,21 @@ func check_gameover() -> bool:
 	
 func apply_bot_move() -> void:
 	if !resource.active_player.is_bot: return
+	#while 
+	#print("___")
+	for initiative in resource.active_player.initiatives:
+		var random_move = resource.active_player.legal_moves.pick_random()
+		game.receive_move(random_move)
+		#print(initiative)
+		if resource.active_player.initiatives.size() > 1:
+			resource.active_player.generate_legal_moves()
 	
-	var random_move = resource.active_player.legal_moves.pick_random()
-	game.receive_move(random_move)
+	
+	#var initiave = resource.active_player.is_last_initiative()
+	#var a = resource.active_player.initiatives
+	#var b = resource.active_player.initiative_index
+	#print(random_move)
+	pass
 	
 func reset() -> void:
 	resource.reset()
@@ -85,7 +97,6 @@ func reset() -> void:
 func apply_mods() -> void:
 	apply_void_mod()
 	apply_hellhorse_mod()
-	apply_spy_mod()
 	
 func apply_void_mod() -> void:
 	if FrameworkSettings.active_mode != FrameworkSettings.ModeType.VOID: return
@@ -115,18 +126,6 @@ func apply_hellhorse_mod() -> void:
 		FrameworkSettings.InitiativeType.HELLHORSE:
 			pass
 	
-func apply_spy_mod() -> void:
-	if FrameworkSettings.active_mode != FrameworkSettings.ModeType.SPY: return
-	#if game.notation.resource.moves.size() < 2: return
-	
-	#var initiative = resource.active_player.get_initiative()
-	#match initiative:
-		#FrameworkSettings.InitiativeType.BASIC:
-			#resource.active_player.generate_legal_moves()
-			#game.board.reset_state_tiles()
-		#FrameworkSettings.InitiativeType.SPY:
-			#pass
-	
 func fox_mod_preparation() -> void:
 	resource.fox_swap_players.append_array(resource.players)
 	
@@ -138,20 +137,15 @@ func fox_mod_preparation() -> void:
 	
 func apply_opponent_spy_move() -> void:
 	var move = resource.active_player.opponent.spy_move
+	
 	if move == null: return
 	
 	if !check_spy_move_is_legal():
 		return
 	
 	move.is_postponed = false
-	#if move.type == FrameworkSettings.MoveType.CASTLING:
-		#if !check_spy_move_on_legal_castling():
-			#return
 	
 	match move.type:
-		#FrameworkSettings.MoveType.CASTLING:
-			#if !check_spy_move_on_legal_castling():
-				#return
 		FrameworkSettings.MoveType.CAPTURE:
 			move.is_postponed = !check_spy_move_on_legal_capture()
 		FrameworkSettings.MoveType.PASSANT:
@@ -162,27 +156,27 @@ func apply_opponent_spy_move() -> void:
 	game.receive_move(move)
 	var spy_piece = game.board.get_piece(move.piece)
 	
-	if move.castling_rook != null:
+	if move.type == FrameworkSettings.MoveType.CASTLING:
 		spy_piece.complement_castling_move(move)
 	
+	spy_piece.resource.king_unpin()
+	game.resource.recalc_piece_environment()
 	detect_spy_checkmate()
 	
 func check_spy_move_is_legal() -> bool:
 	resource.active_player.find_threat_moves()
 	resource.active_player.opponent.generate_legal_moves()
+	var king_moves = resource.active_player.opponent.legal_moves.filter(func (a): return a.piece.template.type == FrameworkSettings.PieceType.KING)
+	var king_tile_indexs =[]
+	
+	for king_move in king_moves:
+		king_tile_indexs.append(king_move.end_tile.id)
 	
 	for move in resource.active_player.opponent.legal_moves:
 		if resource.active_player.opponent.spy_move.check_is_equal(move):
 			return true
 	
 	return false
-	
-#func check_spy_move_on_legal_castling() -> bool:
-	#var move = resource.active_player.opponent.spy_move
-	#if move.castling_rook == null: return false
-	##var tile_on_threat = false
-	##var rook = move.castling_rook
-	#return move.check_slide_tiles_on_threat()
 	
 func check_spy_move_on_legal_capture() -> bool:
 	var move = resource.active_player.opponent.spy_move
@@ -206,53 +200,6 @@ func update_spy_move_on_slide_capture() -> void:
 func detect_spy_checkmate() -> void:
 	resource.active_player.opponent.find_threat_moves()
 	if resource.active_player.opponent.can_apply_checkmate():
-	#if !resource.active_player.opponent.check_moves.is_empty():
 		resource.winner_player = resource.active_player.opponent
 		game.end()
-	
-	
-func apply_opponent_spy_move_old() -> void:
-	if resource.active_player.opponent.spy_move == null: return
-	var spy_piece_resource = resource.active_player.opponent.spy_move.piece
-	var spy_piece = game.board.get_piece(spy_piece_resource)
-	var is_capturing = resource.active_player.opponent.spy_move.captured_piece != null
-	var castling_rook = resource.active_player.opponent.spy_move.castling_rook
-	var end_of_slide_tile_resource = resource.get_tile_after_slide()
-	resource.active_player.opponent.spy_move = null
-	
-	if end_of_slide_tile_resource.piece != null:
-		var captured_piece = game.board.get_piece(end_of_slide_tile_resource.piece)
-		
-		if spy_piece != captured_piece:
-			captured_piece.capture(spy_piece, true)
-	
-	var spy_tile = game.board.get_tile(end_of_slide_tile_resource)
-	
-	if is_capturing:
-		if spy_tile.resource.piece != null and spy_piece.template.type == FrameworkSettings.PieceType.PAWN:
-			spy_piece.place_on_tile(spy_tile)
-	else:
-		spy_piece.place_on_tile(spy_tile)
-	
-	if castling_rook != null:
-		spy_piece.complement_castling_move(castling_rook)
-	
-	#resource.is_spy_action = true
-	#spy_piece.place_on_tile(spy_tile)
-	#resource.is_spy_action = false
-	
-	var tile_resource_on_reset = []
-	for capture_move in spy_piece_resource.player.capture_moves:
-		if !tile_resource_on_reset.has(capture_move.end_tile):
-			tile_resource_on_reset.append(capture_move.end_tile)
-	
-	game.board.reset_tiles(tile_resource_on_reset)
-	
-	game.recalc_piece_environment()
-	#spy_piece_resource.player.unfresh_all_pieces()
-	#spy_piece_resource.player.find_threat_moves()
-	#spy_piece_resource.player.opponent.unfresh_all_pieces()
-	#spy_piece_resource.player.opponent.generate_legal_moves()
-	#game.board.reset_focus_tile()
-	#game.board.reset_tiles()
 #endregion

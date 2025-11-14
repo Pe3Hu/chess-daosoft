@@ -216,9 +216,11 @@ func reset() -> void:
 	game.resource.recalc_piece_environment()
 	
 func resize() -> void:
-	custom_minimum_size = Vector2(FrameworkSettings.BOARD_SIZE) * FrameworkSettings.TILE_SIZE
+	%BoardContainer.size = Vector2(FrameworkSettings.BOARD_SIZE) * FrameworkSettings.TILE_SIZE
+	size = Vector2(FrameworkSettings.BOARD_SIZE + Vector2i(2, 2)) * FrameworkSettings.TILE_SIZE
 	resource.resize()
 	resource_to_piece = {}
+	update_axis()
 	
 	remove_tiles()
 	remove_pieces()
@@ -226,6 +228,11 @@ func resize() -> void:
 	init_tiles()
 	init_pieces()
 	reset()
+	
+func update_axis() -> void:
+	var is_9_visible = FrameworkSettings.BOARD_SIZE != FrameworkSettings.DEFAULT_BOARD_SIZE
+	%DigitLabel9.visible = is_9_visible
+	%LetterLabel9.visible = is_9_visible
 	
 func remove_tiles() -> void:
 	while tiles.get_child_count() > 0:
@@ -269,17 +276,25 @@ func set_fox_swap_tiles_as_none_state() -> void:
 		tile.update_state()
 	
 func fox_swap(piece_for_swap_: Piece) -> void:
-	var focus_piece = get_piece(resource.focus_tile.piece)
-	var focus_tile = get_tile(resource.focus_tile)
-	var swap_tile = get_tile(piece_for_swap_.resource.tile)
-	var temp_tile = get_free_tile()
-	piece_for_swap_.place_on_tile(temp_tile)
-	focus_piece.place_on_tile(swap_tile)
-	piece_for_swap_.place_on_tile(focus_tile)
+	#var focus_piece = get_piece(resource.focus_tile.piece)
+	var focus_tile = get_tile(resource.focus_tile).resource
+	var swap_tile = get_tile(piece_for_swap_.resource.tile).resource
+	var temp_tile = get_free_tile().resource
+	var fox_move = MoveResource.new(null, focus_tile, temp_tile)
+	game.receive_move(fox_move)
+	#piece_for_swap_.place_on_tile(temp_tile)
+	
+	#focus_piece.place_on_tile(swap_tile)
+	fox_move = MoveResource.new(null, swap_tile, focus_tile)
+	game.receive_move(fox_move)
+	
+	#piece_for_swap_.place_on_tile(focus_tile)
+	fox_move = MoveResource.new(null, temp_tile, swap_tile)
+	game.receive_move(fox_move)
 	
 	reset_tile_state_after_swap()
 	fox_mod_tile_state_update()
-	piece_for_swap_.is_holden = false
+	#piece_for_swap_.is_holden = false
 	
 func fox_random_swap() -> void:
 	var player = game.referee.resource.fox_swap_players.front()
@@ -291,6 +306,7 @@ func fox_random_swap() -> void:
 	fox_swap(swap_piece)
 	
 func reset_tile_state_after_swap() -> void:
+	resource.focus_tile = null
 	var player = game.referee.resource.fox_swap_players.pop_front()
 	for piece in player.fox_swap_pieces:
 		var tile = get_tile(piece.tile)
@@ -306,7 +322,6 @@ func get_free_tile() -> Tile:
 		option_tile = tiles.get_child(tile_index)
 	
 	return option_tile
-	
 #endregion
 
 #region hellhorse
@@ -330,7 +345,6 @@ func clear_phantom_hellhorse_captures() -> void:
 	start_tile.update_state()
 	var phantom_captures = last_move.piece.player.opponent.capture_moves.filter(func (a): return a.captured_piece == last_move.piece)
 	last_move.piece.player.opponent.capture_moves = last_move.piece.player.opponent.capture_moves.filter(func (a): !phantom_captures.has(a))
-	
 #endregion
 
 #region ui buttons

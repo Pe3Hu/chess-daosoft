@@ -3,20 +3,20 @@ extends Node
 
 
 #region fen
+#"RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr" classic start
+#"8/8/RNBQKBNR/PPPPPPPP/pppppppp/rnbqkbnr/8/8" void start
+#"RNBQKBHR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbhr" hellhorse start
 #"r1NK3r/2NP4/3Q4/b/8/8/pppppppp/rnbkqbQr"
 #"q1NKQ2r/2PPP3/8/b7/8/8/4p3/4k3" pin
-#"RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr" classic
-#"8/8/RNBQKBNR/PPPPPPPP/pppppppp/rnbqkbnr/8/8" void
 #"8/8/RNBQKBNR/PPPP2PP/pppp2bp/rnbkq11r/8/8" check
 #"RNBQKQBNR/PPPPPPPPP/9/9/9/9/9/ppppppppp/rnbqkqbnr" gambit
 #"9/9/RNBQKQBNR/PPPB1BPPP/9/ppppppppp/rnbqkqbnr/9/9" gambit test
 #"RNBQKBHR/PPPPPPPP/8/8/7H/6p1/pppppppp/rnbqkbhr" hellhorse king capture and phantom
-#"RNBQKBHR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbhr" hellhorse start
 #"RNBQKBNR/PPPPPPPP/8/8/Q6q/6p1/pppppppp/rnbqkbnr" spy test
-#"RNBQKBNR/PPPPPPPP/B7/1Q6/8/8/8/r3k2" spy castling test
-const DEFAULT_START_FEN: String = "RNBQKBNR/PPPPPPPP/B7/BQ6/p7/8/3ppp2/r3k2r"
+#"RNBQK3/PPPPP2p/B7/BQ2p3/1p6/8/4ppp1/r3k2r" spy castling test
+const DEFAULT_START_FEN: String = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr"
 const GAMBIT_START_FEN: String = "RNBQKQBNR/PPPPPPPPP/9/9/9/9/9/ppppppppp/rnbqkqbnr"
-const HELLHORSE_START_FEN: String = "RNBQKBHR/PPPPPPPP/8/8/7H/6p1/pppppppp/rnbqkhhr"
+const HELLHORSE_START_FEN: String = "RNBQKBHR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbhr"
 #endregion
 
 #region board
@@ -123,7 +123,8 @@ enum MoveType {
 	DRAW = 5,
 	PROMOTION = 6,
 	CASTLING = 7,
-	SPY = 8
+	SPY = 8,
+	FOX = 9,
 }
 
 const move_to_symbol = {
@@ -183,6 +184,7 @@ const mod_to_fen: Dictionary = {
 	ModeType.HELLHORSE: HELLHORSE_START_FEN,
 	ModeType.SPY: DEFAULT_START_FEN
 }
+
 const mod_to_board_size: Dictionary = {
 	ModeType.CLASSIC: DEFAULT_BOARD_SIZE,
 	ModeType.FOX: DEFAULT_BOARD_SIZE,
@@ -191,6 +193,7 @@ const mod_to_board_size: Dictionary = {
 	ModeType.HELLHORSE: DEFAULT_BOARD_SIZE,
 	ModeType.SPY: DEFAULT_BOARD_SIZE,
 }
+
 const mod_to_initiatives: Dictionary = {
 	ModeType.CLASSIC: [InitiativeType.BASIC],
 	ModeType.FOX: [InitiativeType.BASIC],

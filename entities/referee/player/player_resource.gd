@@ -46,7 +46,7 @@ func _init(referee_: RefereeResource, color_: FrameworkSettings.PieceColor) -> v
 	color = color_ 
 	
 	reset_initiatives()
-	
+
 #region moves
 func generate_moves() -> Array:
 	var moves = []
@@ -168,22 +168,13 @@ func find_pin_moves() -> void:
 			capture_move.captured_piece.pin_source_piece = capture_move.piece
 			capture_move.piece.pin_target_piece = capture_move.captured_piece
 	
-	print([color, pin_pieces.size()])
+func unpin_all_pieces() -> void:
+	for piece in pieces:
+		if opponent.pin_pieces.has(piece):
+			piece.pin_source_piece.unpin()
+			#piece.unpin()
 #endregion
-	
-func generate_legal_moves_old() -> void:
-	if referee.game.board == null: return
-	legal_moves.clear()
-	var pseudo_legal_moves = generate_moves()
-	
-	for pseudo_legal_move in pseudo_legal_moves:
-		referee.game.board.make_move(pseudo_legal_move)#, true)
-		
-		if !opponent.can_apply_checkmate():#opponent.generate_moves()):
-			legal_moves.append(pseudo_legal_move)
-		
-		referee.game.board.unmake_move(pseudo_legal_move)
-	
+
 func can_apply_checkmate() -> bool:#moves_: Array) -> bool:
 	var moves_ = generate_moves()
 	for move in moves_:#legal_moves:#moves_:

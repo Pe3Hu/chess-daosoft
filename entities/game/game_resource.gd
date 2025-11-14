@@ -14,7 +14,6 @@ func _init() -> void:
 		player.board = board
 	
 	#var result = move_generation_test(2)
-	#print(result)
 	
 func move_generation_test(depth_: int) -> int:
 	if depth_ == 0: return 1
